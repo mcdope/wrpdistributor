@@ -8,7 +8,8 @@
         "ext-pdo_mysql": "*",
         "vlucas/phpdotenv": "^5.5",
         "phpseclib/phpseclib": "^3.0",
-        "monolog/monolog": "^3.3"
+        "monolog/monolog": "^3.3",
+        "symfony/console": "^6.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

@@ -5,7 +5,7 @@ or any application implementing it (looking at you, Atari crowd 👏)
 
 ### License ###
 
-This whole project (regarding this script to distribute session to `wrp`) is licensed under AGPLv3. You can find 
+This whole project (regarding this script to distribute sessions to multiple `wrp` instances) is licensed under AGPLv3. You can find 
 the license text at https://www.gnu.org/licenses/agpl-3.0.de.html. Basically it means it's opensource and you can do 
 whatever you want, as long as you make your changes opensource again. Of course preferred as a pull request, but to be 
 compliant it's enough to publish your sources. And yes, this also applies if you don't distribute it - it's AGPL, not GPL.
@@ -54,7 +54,15 @@ You will need MySQL 8, PHP8.2 and composer on your server to run this.
 - adjust remaining parameters in `.env` according to your needs
 - continue with "actually set up at least one containerHost" from [The easy way](README.md#the-easy-way-)
 
+#### Stuff you need to figure out yourself ####
 
+You should clean up unused sessions sometimes. For this there is a cli command provided - `./bin/console cleanup:sessions`.
+It checks every session for age and will shutdown the container (if there is one) and delete the session afterward.
+Optionally you can specify the timeout for sessions in minutes as an argument, the default is 3600 - so every session
+not used for at least an hour will be terminated by default.
+
+If you're running `wrp-distributor` via Docker you can just invoke `make cleanup_session` instead. If you
+run a self-configured setup you need to 
 
 ### How do I use it? 
 
@@ -84,3 +92,6 @@ Points you should look into:
 - configure `nginx` container to disallow serving `./ssh`, `./docker` and `logs` to make sure people don't mess up because they use the unmodified dev docker for production usage
 - add support for password protected SSH keys
 - add purpose-bound Exception classes
+- introduce service for config/env handling
+- introduce service to handle container stuff
+- strip down php container, guess we don't need most extensions

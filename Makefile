@@ -26,7 +26,7 @@ up:
 		$(MAKE) composer;\
 	fi
 
-stop:
+stop: cleanup_sessions
 	@echo ""
 	@echo "${YELLOW}Stop all container${NOCOLOR}"
 	@echo ""
@@ -60,6 +60,9 @@ bash_mysql:
 	docker-compose exec mysql_$(PROJECT_NAME) bash
 
 restart: stop up
+
+cleanup_sessions:
+	docker-compose exec php_$(PROJECT_NAME) ./bin/console cleanup:sessions
 
 help:
 	@echo ""

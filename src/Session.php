@@ -171,6 +171,36 @@ class Session {
         );
     }
 
+    public static function loadFromDatabaseById(
+        ServiceContainer $serviceContainer,
+        int $sessionId
+    ): self
+    {
+        $sessionDataStmt = $serviceContainer->pdo->prepare(
+            "SELECT * FROM `sessions` WHERE id = :sessionId"
+        );
+
+        if (!$sessionDataStmt->execute(['sessionId' => $sessionId])) {
+            throw new \LogicException('Could not load session from database!');
+        }
+
+        if (!$sessionData = $sessionDataStmt->fetch()) {
+            throw new \LogicException('Session not found by Id');
+        }
+
+        return new self(
+            $serviceContainer,
+            $sessionData['clientIp'],
+            $sessionData['clientUserAgent'],
+            $sessionData['id'],
+            $sessionData['wrpContainerId'],
+            $sessionData['containerHost'],
+            $sessionData['port'],
+            new \DateTime($sessionData['started']),
+            new \DateTime($sessionData['lastUsed'] ?? 'now'),
+        );
+    }
+
     public function startContainer(): void
     {
         if (null === $this->id) {
