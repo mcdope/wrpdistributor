@@ -1,5 +1,5 @@
 # Credentials
-ssh/
+ssh/*
 .env
 
 # Application data
