@@ -6,12 +6,15 @@ use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 
 class Session {
+    public const EXCEPTION_ALREADY_HAS_CONTAINER = 128;
+    public const EXCEPTION_HAS_NO_CONTAINER = 256;
+
     private const DOCKER_IMAGE = 'tenox7/wrp';
 
     public string $clientIp;
     public string $clientUserAgent;
     public ?int $id = null;
-    private ?string $wrpContainerId;
+    public ?string $wrpContainerId;
     public ?string $containerHost = null;
     public ?int $port = null;
     public ?\DateTime $started = null;
@@ -181,7 +184,8 @@ class Session {
                     $this->id, 
                     $this->wrpContainerId,
                     $this->containerHost
-                )
+                ),
+                self::EXCEPTION_ALREADY_HAS_CONTAINER
             );
         }
 
@@ -257,7 +261,8 @@ class Session {
                 sprintf(
                     'Session %d has no container attached! I would suggest calling startContainer() before, but since you wanted to stop it... lol...', 
                     $this->id
-                )
+                ),
+                self::EXCEPTION_HAS_NO_CONTAINER
             );
         }
 

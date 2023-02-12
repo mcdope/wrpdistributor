@@ -103,16 +103,17 @@ yourself if the instance is available yet.
 Will stop the `wrp` container for the current session. The request will respond asap, but stopping the actual container can take some time. 
 Considering the speed of modern servers and retro computers this will likely be still faster then your app reacting to the response. 
 But no kind of "time for the container to be stopped" can be assumed! This should not have any implications for implementation I guess.
+In case there is no container running for the current session it will return 204 instead of 202 on success.
 
 Recommendations: issue this request "onNetworkShutdown", "onWindowClose" and similar.
 
 
 #### Response ####
-| Property      | Value                 |
-|---------------|-----------------------|
-| Status        | 202 or 503, see above |
-| Content-Type: | none or text/html     |
-| Body:         | none or error details |
+| Property      | Value                      |
+|---------------|----------------------------|
+| Status        | 202, 204 or 503, see above |
+| Content-Type: | none or text/html          |
+| Body:         | none or error details      |
 
 ## Testing / manual fiddling ##
 

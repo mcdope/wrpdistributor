@@ -30,6 +30,34 @@ readonly class StartSession implements ActionInterface
                 $session->containerHost,
                 $session->port
             );
+
+            exit(0);
+        } catch (\LogicException $logicException) {
+            if (Session::EXCEPTION_ALREADY_HAS_CONTAINER === $logicException->getCode()) {
+                $session->upsert();
+
+                header('Content-Type: text/xml');
+                http_response_code(202);
+
+                $this->serviceContainer->logger->debug(
+                    'Container already running, returning existing instance',
+                    [
+                        'containerHost' => $session->containerHost,
+                        'containerId' => $session->wrpContainerId,
+                        'port' => $session->port,
+                    ]
+                );
+
+                echo sprintf(
+                    '<xml><wrpUrl>%s:%d</wrpUrl></xml>',
+                    $session->containerHost,
+                    $session->port
+                );
+
+                exit(0);
+            }
+
+            throw $logicException;
         } catch (\Throwable $throwable) {
             http_response_code(503);
 

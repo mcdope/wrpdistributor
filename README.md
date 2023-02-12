@@ -83,3 +83,4 @@ Points you should look into:
 - maybe provide `make` targets to run test requests
 - configure `nginx` container to disallow serving `./ssh`, `./docker` and `logs` to make sure people don't mess up because they use the unmodified dev docker for production usage
 - add support for password protected SSH keys
+- add purpose-bound Exception classes
