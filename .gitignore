@@ -3,7 +3,7 @@ ssh/*
 .env
 
 # Application data
-logs/
+logs/*
 docker/mysql/data
 docker/mysql/logs
 docker/nginx/logs
