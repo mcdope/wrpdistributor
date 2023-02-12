@@ -10,3 +10,8 @@ docker/nginx/logs
 
 # Dependencies
 vendor/
+
+# IDE and misc. crap
+.idea
+.DS_Store
+thumbs.db
