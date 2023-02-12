@@ -1,0 +1,12 @@
+# Credentials
+ssh/
+.env
+
+# Application data
+logs/
+docker/mysql/data
+docker/mysql/logs
+docker/nginx/logs
+
+# Dependencies
+vendor/

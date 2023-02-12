@@ -1,0 +1,28 @@
+{
+    "name": "amidev/wrp-distributor",
+    "description": "Distributes client sessions to multiple WRP containers (that it also manages)",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "vlucas/phpdotenv": "^5.5",
+        "phpseclib/phpseclib": "^3.0",
+        "monolog/monolog": "^3.3"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
+    },
+    "license": "AGPLv3",
+    "autoload": {
+        "psr-4": {
+            "AmiDev\\WrpDistributor\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "McDope",
+            "email": "mcdope@mcdope.org"
+        }
+    ]
+}
