@@ -43,7 +43,7 @@ final class CleanUnusedSessions extends Command
             'timeout',
             InputArgument::OPTIONAL,
             'Minutes to have passed to consider a session being unused',
-            3600
+            10
         );
     }
 
