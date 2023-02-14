@@ -3,6 +3,7 @@
 namespace AmiDev\WrpDistributor\Actions;
 
 use AmiDev\WrpDistributor\DockerManager;
+use AmiDev\WrpDistributor\Exceptions\Docker\ContainerStartException;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
@@ -33,8 +34,8 @@ readonly class StartSession implements ActionInterface
             );
 
             exit(0);
-        } catch (\LogicException $logicException) {
-            if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $logicException->getCode()) {
+        } catch (ContainerStartException $containerStartException) {
+            if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $containerStartException->getCode()) {
                 $session->upsert();
 
                 header('Content-Type: text/xml');
@@ -58,12 +59,20 @@ readonly class StartSession implements ActionInterface
                 exit(0);
             }
 
-            throw $logicException;
+            http_response_code(503);
+
+            echo sprintf(
+                '<h1>%s</h1><p>%s</p>',
+                'Docker container for this session could not be started!',
+                $containerStartException->getMessage(),
+            );
+
+            exit(1);
         } catch (\Throwable $throwable) {
             http_response_code(503);
 
             $this->serviceContainer->logger->debug(
-                sprintf('Throwable occurred in %s', self::class),
+                sprintf('Unexpected throwable occurred in %s', self::class),
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
@@ -77,7 +86,7 @@ readonly class StartSession implements ActionInterface
                             <p>
                                 <pre>%s</pre>
                             </p>',
-                'Docker container for this session could not be started! Most likely a temporary resource issue...',
+                'Unexpected problem while starting the container for your session.',
                 $throwable->getMessage(),
                 $throwable->getTraceAsString()
             );

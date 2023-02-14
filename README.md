@@ -85,7 +85,7 @@ Points you should look into:
 
 ### TODO ###
 - Implement load balancing for containerHosts
-    - testcase: check available resources and dynamically scale
+    - best case: check available resources and dynamically scale
     - easy case: make MAX_CONTAINERS per containerHost 
 - maybe provide `make` targets to run test requests
 - configure `nginx` container to disallow serving `./ssh`, `./docker` and `logs` to make sure people don't mess up because they use the unmodified dev docker for production usage

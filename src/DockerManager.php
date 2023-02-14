@@ -2,6 +2,7 @@
 
 namespace AmiDev\WrpDistributor;
 
+use AmiDev\WrpDistributor\Exceptions\Docker\ContainerStartException;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 
@@ -19,14 +20,17 @@ class DockerManager
         [$this->containerHosts, $this->privateKeys] = $this->readConfiguredHosts();
     }
 
+    /**
+     * @throws ContainerStartException
+     */
     public function startContainer(Session $session): void
     {
         if (null === $session->id) {
-            throw new \LogicException('Session not persisted yet!');
+            throw new ContainerStartException('Session not persisted yet!');
         }
 
         if (null !== $session->wrpContainerId) {
-            throw new \LogicException(
+            throw new ContainerStartException(
                 sprintf(
                     'Session %d already has container %s on host %s attached!',
                     $session->id,
@@ -47,8 +51,13 @@ class DockerManager
             ]
         );
 
+        try {
+            $session->port = $this->findUnusedPort();
+        } catch (\RuntimeException) {
+            throw new ContainerStartException('Capacity limited reached, try again later or adjust distributor configuration.');
+        }
+
         $session->containerHost = $randomHost['host'];
-        $session->port = $this->findUnusedPort();
         [$userName, $privateKey] = $randomHost['privateKey'];
 
         $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
@@ -56,7 +65,7 @@ class DockerManager
         if (!$ssh->login($userName, $key)) {
             $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost');
 
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
+            throw new ContainerStartException('Can\'t login to containerHost! Configuration issue?');
         }
 
         $containerStartCommand = sprintf(
@@ -66,19 +75,37 @@ class DockerManager
             self::DOCKER_IMAGE
         );
 
-        if (!$ssh->exec($containerStartCommand, function($shellOutput) use ($session) {
-            $shellOutput = trim($shellOutput);
-            $session->wrpContainerId = $shellOutput;
-            $session->upsert();
+        if (!$ssh->exec(
+            $containerStartCommand,
+            function($shellOutput) use ($session)
+            {
+                if (!$this->isContainerIdValid($shellOutput)) {
+                    $this->serviceContainer->logger->warning(
+                        'Container start seems to have failed, unexpected output from Docker',
+                        [
+                            'shellOutput' => $shellOutput,
+                            'sessionId' => $session->id,
+                            'port' => $session->port,
+                            'containerHost' => $session->containerHost,
+                        ]
+                    );
 
-            $this->serviceContainer->logger->info(
-                'startContainer() successfully spun up new container',
-                [
-                    'containerId' => $session->wrpContainerId,
-                    'shellOutput' => $shellOutput,
-                ]
-            );
-        })) {
+                    throw new ContainerStartException('Docker command returned unexpected output on container start! Output was: ' . $shellOutput);
+                }
+
+                $shellOutput = trim($shellOutput);
+                $session->wrpContainerId = $shellOutput;
+                $session->upsert();
+
+                $this->serviceContainer->logger->info(
+                    'startContainer() successfully spun up new container',
+                    [
+                        'containerId' => $session->wrpContainerId,
+                        'shellOutput' => $shellOutput,
+                    ]
+                );
+            }) // end ssh exec call
+        ) { // start if body
             $this->serviceContainer->logger->info(
                 'startContainer() failed to spin up new container',
                 [
@@ -86,7 +113,7 @@ class DockerManager
                 ]
             );
 
-            throw new \RuntimeException("Can't start container on determined host!");
+            throw new ContainerStartException("Can't send command to start container on determined host! Temporary network issue maybe?");
         }
     }
 
@@ -122,6 +149,18 @@ class DockerManager
         );
 
         if (!$ssh->exec($containerStopCommand, function($shellOutput) use ($session) {
+            if (!$this->isContainerIdValid($shellOutput)) {
+                $this->serviceContainer->logger->info(
+                    'Container stop seems to have failed, unexpected output from Docker. Most likely the container already is gone.',
+                    [
+                        'shellOutput' => $shellOutput,
+                        'sessionId' => $session->id,
+                        'port' => $session->port,
+                        'containerHost' => $session->containerHost,
+                    ]
+                );
+            }
+
             $session->wrpContainerId = null;
             $session->port = null;
             $session->containerHost = null;
@@ -160,7 +199,7 @@ class DockerManager
                 return $_ENV['START_PORT'];
             }
 
-            if (($startPort + $maxContainers) < $result['nextPort']) {
+            if (($startPort + $maxContainers) <= $result['nextPort']) {
                 throw new \RuntimeException('No free ports left!');
             }
 
@@ -206,5 +245,13 @@ class DockerManager
             $containerHosts,
             $containerHostKeys,
         ];
+    }
+
+    private function isContainerIdValid(string $dockerCommandOutput): bool
+    {
+        return (bool) preg_match(
+            '/^([a-z0-9]{64})$/',
+            $dockerCommandOutput
+        );
     }
 }
