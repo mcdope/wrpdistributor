@@ -2,6 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Actions;
 
+use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
@@ -14,12 +15,12 @@ readonly class StopSession implements ActionInterface
     public function __invoke(Session $session): void
     {
         try {
-            $session->stopContainer();
+            $this->serviceContainer->dockerManager->stopContainer($session);
             $session->upsert();
 
             http_response_code(202);
         } catch (\LogicException $logicException) {
-            if (Session::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
+            if (DockerManager::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
                 $this->serviceContainer->logger->debug('Container stop requested, but there is none to stop');
 
                 http_response_code(204);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AmiDev\WrpDistributor\Commands;
 
+use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\Session;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,15 +20,11 @@ final class CleanUnusedSessions extends Command
     public function getUnusedSessions(int $timeout): array|false
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
-            ' SELECT
-                        id, wrpContainerId, containerHost, port
+            ' SELECT id, wrpContainerId, containerHost, port
                     FROM sessions WHERE
                           TIMESTAMPDIFF(
                               MINUTE,
-                              IFNULL(
-                                  lastUsed,
-                                  started
-                              ),
+                              IFNULL(lastUsed, started),
                               NOW()
                           ) > :timeout'
         );
@@ -35,6 +32,7 @@ final class CleanUnusedSessions extends Command
         return $unusedSessionsStmt->fetchAll(0);
     }
 
+    /** @noinspection PhpUnused */
     protected function configure(): void
     {
         $this->setName('cleanup:sessions');
@@ -47,6 +45,7 @@ final class CleanUnusedSessions extends Command
         );
     }
 
+    /** @noinspection PhpUnused */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $timeout = (int) $input->getArgument('timeout');
@@ -68,13 +67,13 @@ final class CleanUnusedSessions extends Command
                     !empty($sessionToCleanup['containerHost']) &&
                     !empty($sessionToCleanup['wrpContainerId'])
                 ) {
-                    $session->stopContainer();
+                    $this->serviceContainer->dockerManager->stopContainer($session);
                 }
 
                 $session->delete();
                 $success++;
             } catch (\LogicException $logicException) {
-                if (Session::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
+                if (DockerManager::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
                     // Not an error, nothing to clean up
                     $success++;
                 } else {
@@ -91,6 +90,7 @@ final class CleanUnusedSessions extends Command
                 $error++;
             }
 
+            /** @noinspection DisconnectedForeachInstructionInspection */
             $progressBar->advance();
         }
         $progressBar->finish();

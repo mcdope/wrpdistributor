@@ -2,15 +2,7 @@
 
 namespace AmiDev\WrpDistributor;
 
-use phpseclib3\Crypt\PublicKeyLoader;
-use phpseclib3\Net\SSH2;
-
 class Session {
-    public const EXCEPTION_ALREADY_HAS_CONTAINER = 128;
-    public const EXCEPTION_HAS_NO_CONTAINER = 256;
-
-    private const DOCKER_IMAGE = 'tenox7/wrp';
-
     public string $clientIp;
     public string $clientUserAgent;
     public ?int $id = null;
@@ -105,7 +97,7 @@ class Session {
                 ]
             );
 
-            throw new \Exception('Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode());
+            throw new \RuntimeException('Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode());
         }
 
         if (null === $this->id) {
@@ -139,6 +131,9 @@ class Session {
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function loadFromDatabase(
         ServiceContainer $serviceContainer,
         string $clientIp,
@@ -176,6 +171,9 @@ class Session {
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function loadFromDatabaseById(
         ServiceContainer $serviceContainer,
         int $sessionId
@@ -204,180 +202,6 @@ class Session {
             new \DateTime($sessionData['started']),
             new \DateTime($sessionData['lastUsed'] ?? 'now'),
         );
-    }
-
-    public function startContainer(): void
-    {
-        if (null === $this->id) {
-            throw new \LogicException('Session not persisted yet!');
-        }
-
-        if (null !== $this->wrpContainerId) {
-            throw new \LogicException(
-                sprintf(
-                    'Session %d already has container %s on host %s attached!',
-                    $this->id, 
-                    $this->wrpContainerId,
-                    $this->containerHost
-                ),
-                self::EXCEPTION_ALREADY_HAS_CONTAINER
-            );
-        }
-
-        $containerHosts = explode(',', $_ENV['CONTAINER_HOSTS']);
-        $containerHostKeys = explode(',', $_ENV['CONTAINER_HOSTS_KEYS']);
-        foreach ($containerHostKeys as $key => $containerHostKey) {
-            $containerHostKeys[$key] = explode('~', $containerHostKey);
-        }
-
-        $randomHostIndex = array_rand($containerHosts);
-        $randomHost = $containerHosts[$randomHostIndex];
-        [$userName, $privateKey] = $containerHostKeys[$randomHostIndex];
-
-        $this->serviceContainer->logger->debug(
-            'startContainer() determined new containerHost',
-            [
-                'randomHostIndex' => $randomHostIndex,
-                'randomHost' => $randomHost,
-                'privateKey' => $privateKey,
-            ]
-        );
-
-        $this->containerHost = $randomHost;
-        $this->port = $this->findUnusedPort();
-
-        $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        $ssh = new SSH2($this->containerHost);
-        if (!$ssh->login($userName, $key)) {
-            $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost');
-
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
-
-        $containerStartCommand = sprintf(
-            "docker run --rm --name %s -d -p %d:8080 %s",
-            "wrp_session_{$this->id}",
-            $this->port,
-            self::DOCKER_IMAGE
-        );
-
-        if (!$ssh->exec($containerStartCommand, function($shellOutput) {
-            $shellOutput = trim($shellOutput);
-            $this->wrpContainerId = $shellOutput;
-            $this->upsert();
-
-            $this->serviceContainer->logger->info(
-                'startContainer() successfully spun up new container',
-                [
-                    'containerId' => $this->wrpContainerId,
-                    'shellOutput' => $shellOutput,
-                ]
-            );
-        })) {
-            $this->serviceContainer->logger->info(
-                'startContainer() failed to spin up new container',
-                [
-                    'containerId' => $this->wrpContainerId,
-                ]
-            );
-
-            throw new \RuntimeException("Can't start container on determined host!");
-        }
-    }
-
-    public function stopContainer(): void
-    {
-        if (null === $this->id) {
-            throw new \LogicException('A not yet persisted session for sure has no container!');
-        }
-
-        if (null === $this->wrpContainerId) {
-            throw new \LogicException(
-                sprintf(
-                    'Session %d has no container attached! I would suggest calling startContainer() before, but since you wanted to stop it... lol...', 
-                    $this->id
-                ),
-                self::EXCEPTION_HAS_NO_CONTAINER
-            );
-        }
-
-        $containerHosts = explode(',', $_ENV['CONTAINER_HOSTS']);
-        $containerHostKeys = explode(',', $_ENV['CONTAINER_HOSTS_KEYS']);
-        foreach ($containerHostKeys as $key => $containerHostKey) {
-            $containerHostKeys[$key] = explode('~', $containerHostKey);
-        }
-
-        $hostIndex = array_search($this->containerHost, $containerHosts, true);
-        $containerHost = $containerHosts[$hostIndex];
-        [$userName, $privateKey] = $containerHostKeys[$hostIndex];
-
-        $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        $ssh = new SSH2($containerHost);
-        if (!$ssh->login($userName, $key)) {
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
-
-        $containerStopCommand = sprintf(
-            "docker stop %s",
-            $this->wrpContainerId,
-        );
-
-        if (!$ssh->exec($containerStopCommand, function($shellOutput) {
-            $this->wrpContainerId = null;
-            $this->port = null;
-            $this->containerHost = null;
-
-            $this->upsert();
-        })) {
-            throw new \RuntimeException("Can't stop container!");
-        }
-    }
-
-    private function findUnusedPort(): int
-    {
-        $startPort = $_ENV['START_PORT'];
-        $maxContainers = $_ENV['MAX_CONTAINERS_RUNNING'];
-
-        $query = "SELECT MAX(`port`)+1 as 'nextPort' FROM `sessions`";
-        if ($result = $this->serviceContainer->pdo->query($query)->fetch()) {
-            if (empty($result['nextPort'])) {
-                $this->port = $_ENV['START_PORT'];
-
-                $this->serviceContainer->logger->debug(
-                    'findUnusedPort() falling back to START_PORT because of empty result',
-                    [
-                        'nextPort' => $_ENV['START_PORT'],
-                    ]
-                );
-
-                return $this->port;
-            }
-
-            if (($startPort + $maxContainers) < $result['nextPort']) {
-                throw new \Exception('No free ports left!');
-            }
-
-            $this->port = $result['nextPort'];
-
-            $this->serviceContainer->logger->debug(
-                'findUnusedPort() determined next port to use',
-                [
-                    'nextPort' => $this->port,
-                ]
-            );
-
-            return $this->port;
-        }
-
-        $this->port = $_ENV['START_PORT'];
-        $this->serviceContainer->logger->debug(
-            'findUnusedPort() falling back to START_PORT at end of method',
-            [
-                'nextPort' => $_ENV['START_PORT'],
-            ]
-        );
-
-        return $this->port;
     }
 
     public static function createSessionTableIfNotExisting(ServiceContainer $serviceContainer): void

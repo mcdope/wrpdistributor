@@ -11,4 +11,5 @@ $application = new Symfony\Component\Console\Application;
 $application->add(new CleanUnusedSessions());
 
 // Run it
+/** @noinspection PhpUnhandledExceptionInspection */
 $application->run();

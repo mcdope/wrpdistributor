@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpMultipleClassDeclarationsInspection */
+
 namespace AmiDev\WrpDistributor;
 
 use Monolog\Handler\RotatingFileHandler;

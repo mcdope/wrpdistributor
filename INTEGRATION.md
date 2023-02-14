@@ -5,7 +5,7 @@ You can "control" `wrp_distributor` by sending HTTP requests.
 All requests:
 
 - MUST HAVE a `Bearer` header set with the correct authentication token for the instance.
-- CAN HAVE but SHOULD NOT HAVE a body, it's ignored anyway so save the bytes
+- CAN HAVE but SHOULDN'T HAVE a body, It's ignored anyway, so save the bytes
 - WILL RETURN 
 	- a statuscode of 200 in case of GET
 	- a statuscode of 202 for container start/stop actions (because of the delayed execution, exact delay between request and executions varies per config/install)
@@ -13,20 +13,22 @@ All requests:
 	- a statuscode of 400 in case your request doesn't make sense (or some requirements failed, unlikely)
 	- a statuscode of 401 if your "Bearer" header was invalid
 	- a statuscode of 405 if you used an unsupported HTTP method
-	- a statuscode of 503 if the container could not be started (for PUT requests) or stopped (for DELETE requests)
+	- a statuscode of 503 if the container couldn't be started (for PUT requests) or stopped (for DELETE requests)
 
-Control is in quote since there is not much to be done. You will get it after some usage examples. Basically
-everything is determined by the method of your HTTP request. All session handling is done automagically
-by `wrp-distributor`.
+Control is in quote since there is not much to be done.
+You will get it after some usage examples. 
+Basically, everything is determined by the method of your HTTP request.
+Session handling is done automagically by `wrp-distributor`.
 
 ## Important remarks and note ##
 
 `wrp-distributor` manages client sessions based on IP-address (v6 supported, too) and user-agent. This is enforced with a unique database
 key using the ip and userAgent fields. You most likely want to add a small "random per installation" value to the user-agent to make sure 
-multiple user can use the distributor from the same IP address. You could derive it from the MAC maybe in example. 
+multiple users can use the distributor from the same IP address. You could derive it from the MAC, maybe in example. 
 
-Else each user from that IP would share the same `wrp` container. This would cause a heck of confusions with users, would be borderline 
-useless - and very insecure. Yes, this is annoying but that's the price to avoid logins and keep the codebase simple and easy to maintain.
+Else each user from that IP would share the same `wrp` container.
+This would cause a heck of confusion with users, would be borderline useless — and very insecure.
+Yes, this is annoying, but that's the price to avoid logins and keep the codebase simple and easy to maintain.
 
 Also: in case you modify `wrp-distributor` for your project make sure to adhere to the license - you MUST publish your modified sources even
 if you don't distribute them and use them only to provide a service. See LICENSE and README.md for details.
@@ -43,9 +45,12 @@ Any not supported method will result in a 405 status. The supported methods are:
 - PUT
 - DELETE
 
-In case of bugs you will very likely encounter a 400 or 500 status. If you're running `wrp-distributor` from
+In case of bugs, you will very likely encounter a 400 or 500 status.
+
+If you're running `wrp-distributor` from
 the provided docker image the output should include some helpful stack information so please 
-include that in your bug report. In case you're running it on any other way, or better said without `xdebug`, you will be limited to the logs
+include that in your bug report.
+In case you're running it on any other way, or better said without `xdebug`, you will be limited to the logs
 available in `./logs`.
 
 ### GET ###
@@ -64,12 +69,15 @@ Prints a plain html status dashboard of the current instance. It shows the curre
 Simply upserts the session, which causes the lastUsed timestamp to be set to the current date and time. This prevents this session from
 being garbage collected / shutdown. 
 
-Recommendations: Monitor user activity, as long as the user continue scrolling the content or is filling some form issue periodically a 
+Recommendations: Monitor user activity,
+as long as the user continues scrolling the content or is filling some form issue periodically a 
 HEAD request to make sure the session doesn't get killed while the user is doing "work".
 
-Important note: Currently there is no "cleanup" implemented, so the exact interval you should issue such request is not yet determined.
-For now plan with like "every 5minutes unused sessions will be shutdown". I will not be shorter than that, but maybe it will be longer then that.
-But definitly already implement this, cleanup will be implemented without prior notice!
+Important note: 
+Currently there is no "cleanup" implemented, 
+so the exact interval you should issue such a request is not yet determined.
+For now, you can plan with like "every 5-minutes unused sessions will be shutdown". I will not be shorter than that, but maybe it will be longer than that.
+But definitely already implement this, cleanup will be implemented without prior notice!
 
 #### Response ####
 | Property      | Value |
@@ -81,9 +89,9 @@ But definitly already implement this, cleanup will be implemented without prior 
 ### PUT ###
 
 Will check for next available free port and start a `wrp` container on it for the current session. The request will respond asap, but
-starting the actual container can take some time. Considering the speed of modern servers and retro computers this will likely be still
-faster then your app reacting to the response. But no kind of "time for the container to be active" can be assumed! You MUST check 
-yourself if the instance is available yet.
+starting the actual container can take some time. Considering the speed of modern servers and retro computers, this will likely be 
+faster than your app reacting to the response. But no kind of "time for the container to be active" can be assumed! You MUST check 
+yourself if the instance is already available.
 
 
 
@@ -101,8 +109,8 @@ yourself if the instance is available yet.
 ### DELETE ###
 
 Will stop the `wrp` container for the current session. The request will respond asap, but stopping the actual container can take some time. 
-Considering the speed of modern servers and retro computers this will likely be still faster then your app reacting to the response. 
-But no kind of "time for the container to be stopped" can be assumed! This should not have any implications for implementation I guess.
+Considering the speed of modern servers and retro computers, this will likely be faster than your app reacting to the response. 
+But no kind of "time for the container to be stopped" can be assumed! This shouldn't have any implications for implementation, I guess.
 In case there is no container running for the current session it will return 204 instead of 202 on success.
 
 Recommendations: issue this request "onNetworkShutdown", "onWindowClose" and similar.

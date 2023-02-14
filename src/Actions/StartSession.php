@@ -2,6 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Actions;
 
+use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
@@ -19,7 +20,7 @@ readonly class StartSession implements ActionInterface
     public function __invoke(Session $session): void
     {
         try {
-            $session->startContainer();
+            $this->serviceContainer->dockerManager->startContainer($session);
             $session->upsert();
 
             header('Content-Type: text/xml');
@@ -33,7 +34,7 @@ readonly class StartSession implements ActionInterface
 
             exit(0);
         } catch (\LogicException $logicException) {
-            if (Session::EXCEPTION_ALREADY_HAS_CONTAINER === $logicException->getCode()) {
+            if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $logicException->getCode()) {
                 $session->upsert();
 
                 header('Content-Type: text/xml');
