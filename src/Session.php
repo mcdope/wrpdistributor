@@ -57,12 +57,14 @@ class Session {
                             clientIp, 
                             clientUserAgent,
                             wrpContainerId,
+                            containerHost,
                             port,
                             started
                       ) VALUES (
                             :clientIp,
                             :clientUserAgent,
                             :wrpContainerId,
+                            :containerHost,
                             :port,
                             :started
                       )";
@@ -71,18 +73,21 @@ class Session {
                 'clientIp' => $this->clientIp,
                 'clientUserAgent' => $this->clientUserAgent,
                 'wrpContainerId' => $this->wrpContainerId,
+                'containerHost' => $this->containerHost,
                 'port' => $this->port,
                 'started' => $this->started->format('c'),
             ];
         } else {
             $query = "UPDATE `sessions` SET
                             wrpContainerId = :wrpContainerId,
+                            containerHost = :containerHost,
                             port = :port,
                             lastUsed = :lastUsed
                       WHERE `id` = :id";
 
             $parameters = [
                 'wrpContainerId' => $this->wrpContainerId,
+                'containerHost' => $this->containerHost,
                 'port' => $this->port,
                 'lastUsed' => $this->lastUsed->format('c'),
                 'id' => $this->id,
