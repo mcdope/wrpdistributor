@@ -14,12 +14,22 @@ final class CleanUnusedSessions extends Command
 {
     /**
      * @param mixed $timeout
-     * @return mixed
+     * @return array|false
      */
-    public function getUnusedSessions(int $timeout): mixed
+    public function getUnusedSessions(int $timeout): array|false
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
-            'SELECT id, wrpContainerId, containerHost, port FROM sessions WHERE TIMESTAMPDIFF(MINUTE,lastUsed,NOW()) > :timeout'
+            ' SELECT
+                        id, wrpContainerId, containerHost, port
+                    FROM sessions WHERE
+                          TIMESTAMPDIFF(
+                              MINUTE,
+                              IFNULL(
+                                  lastUsed,
+                                  started
+                              ),
+                              NOW()
+                          ) > :timeout'
         );
         $unusedSessionsStmt->execute(['timeout' => $timeout]);
         return $unusedSessionsStmt->fetchAll(0);
@@ -67,9 +77,9 @@ final class CleanUnusedSessions extends Command
                 if (Session::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
                     // Not an error, nothing to clean up
                     $success++;
+                } else {
+                    throw $logicException;
                 }
-
-                throw $logicException;
             } catch (\Throwable $throwable) {
                 $output->writeln('WARN: \Throwable was thrown, message was: ' . $throwable->getMessage());
 
@@ -84,7 +94,7 @@ final class CleanUnusedSessions extends Command
             $progressBar->advance();
         }
         $progressBar->finish();
-
+        $output->writeln('');
         $output->writeln(
             sprintf(
                 'INFO: Cleanup of %d sessions finished, %d sessions terminated successfully - %d sessions failed to terminate.',

@@ -1,6 +1,7 @@
 # Credentials
 ssh/*
 .env
+.env.*
 
 # Application data
 logs/*
