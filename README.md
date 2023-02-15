@@ -87,7 +87,6 @@ Points you should look into:
 - Implement load balancing for containerHosts
     - best case: check available resources and dynamically scale
     - easy case: make MAX_CONTAINERS per containerHost 
-- add support for password protected SSH keys
 - add purpose-bound Exception classes
 - introduce service for config/env handling
 - strip down php container, guess we don't need most extensions

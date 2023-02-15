@@ -3,6 +3,7 @@
 namespace AmiDev\WrpDistributor;
 
 use AmiDev\WrpDistributor\Exceptions\Docker\ContainerStartException;
+use AmiDev\WrpDistributor\Exceptions\Docker\HostConfigurationMismatchException;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 
@@ -18,6 +19,26 @@ class DockerManager
         private array                     $privateKeys = [],
     ) {
         [$this->containerHosts, $this->privateKeys] = $this->readConfiguredHosts();
+    }
+
+    public function countAvailableContainerHosts(): int
+    {
+        return \count($this->containerHosts);
+    }
+
+    public function countSessionsPerContainerHost(): array
+    {
+        return $this->serviceContainer->pdo->query("
+            SELECT containerHost, COUNT(containerHost) as count
+            FROM `sessions`
+            WHERE containerHost IS NOT NULL
+            GROUP BY containerHost
+        ")->fetchAll();
+    }
+
+    public function countsPortsUsed(): int
+    {
+        return $this->serviceContainer->pdo->query('SELECT COUNT(`port`) FROM `sessions`')->fetch()[0];
     }
 
     /**
@@ -60,7 +81,10 @@ class DockerManager
         $session->containerHost = $randomHost['host'];
         [$userName, $privateKey] = $randomHost['privateKey'];
 
-        $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
+        $key = PublicKeyLoader::load(
+            file_get_contents('ssh/' . $privateKey),
+            $randomHost['privateKey'][2] ?? false
+        );
         $ssh = new SSH2($session->containerHost);
         if (!$ssh->login($userName, $key)) {
             $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost');
@@ -137,7 +161,10 @@ class DockerManager
         $containerHost = $this->containerHosts[$hostIndex];
         [$userName, $privateKey] = $this->privateKeys[$hostIndex];
 
-        $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
+        $key = PublicKeyLoader::load(
+            file_get_contents('ssh/' . $privateKey),
+            $this->privateKeys[$hostIndex][2] ?? false
+        );
         $ssh = new SSH2($containerHost);
         if (!$ssh->login($userName, $key)) {
             throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
@@ -224,12 +251,27 @@ class DockerManager
     }
 
 
+    /**
+     * @throws HostConfigurationMismatchException
+     */
     private function readConfiguredHosts(): array
     {
         $containerHosts = explode(',', $_ENV['CONTAINER_HOSTS']);
         $containerHostKeys = explode(',', $_ENV['CONTAINER_HOSTS_KEYS']);
         foreach ($containerHostKeys as $key => $containerHostKey) {
             $containerHostKeys[$key] = explode('~', $containerHostKey);
+        }
+
+        if (\count($containerHosts) !== \count($containerHostKeys)) {
+            $this->serviceContainer->logger->error(
+                'Count of privateKeys does not match count of containerHosts!',
+                [
+                    'containerHosts' => $containerHosts,
+                    'privateKeys' => $containerHostKeys,
+                ]
+            );
+
+            throw new HostConfigurationMismatchException('Count of privateKeys does not match count of containerHosts!');
         }
 
         $this->serviceContainer->logger->debug(

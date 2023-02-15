@@ -17,15 +17,32 @@ readonly class DeadOrAlive implements ActionInterface
     public function __invoke(Session $session): void
     {
         try {
-            $sessionCount = $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch();
-            $portsUsedCount = $this->serviceContainer->pdo->query('SELECT COUNT(`port`) FROM `sessions`')->fetch();
+            $sessionCount = $session->countAllSessions();
+            $portsUsedCount = $this->serviceContainer->dockerManager->countsPortsUsed();
+            $containerHostsAvailable = $this->serviceContainer->dockerManager->countAvailableContainerHosts();
+            $sessionsPerHost = $this->serviceContainer->dockerManager->countSessionsPerContainerHost();
 
             echo '<h1>wrp-distributor status</h1>';
             echo '<p>It\'s alive! Here are some statistics about the current instance:</p>';
             echo '<ul>';
-            echo '<li>Current session count: ' . $sessionCount[0] . '</li>';
-            echo '<li>Current container count: ' . $portsUsedCount[0] . '</li>';
-            echo '<li>Unused configuration potential / remaining containers: ' . ($_ENV['MAX_CONTAINERS_RUNNING'] - $portsUsedCount[0]) . '</li>';
+            echo sprintf("<li>Current session count: %s</li>", $sessionCount);
+            echo sprintf("<li>Current container count: %s</li>", $portsUsedCount);
+            echo sprintf("<li>Available container hosts: %s</li>", $containerHostsAvailable);
+            if (\count($sessionsPerHost)) {
+                echo '<li>Container hosts in use:<br><ol>';
+                foreach ($sessionsPerHost as $containerHost => $sessionCountCurrentHost) {
+                    echo sprintf(
+                        "<li>%s: %s sessions running</li>",
+                        substr(md5($containerHost), 0, 8),
+                        $sessionCountCurrentHost['count']
+                    );
+                }
+                echo '</ol></li>';
+            }
+            echo sprintf(
+                "<li>Unused configuration potential / remaining containers: %s</li>",
+                $_ENV['MAX_CONTAINERS_RUNNING'] - $portsUsedCount
+            );
             echo '</ul>';
 
             http_response_code(200);

@@ -222,4 +222,9 @@ class Session {
             );
         }
     }
+
+    public function countAllSessions(): int
+    {
+        return $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0];
+    }
 }
