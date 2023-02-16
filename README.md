@@ -23,22 +23,29 @@ Download the repository, open a shell and change to the repository. Now...
        - `CONTAINER_HOSTS`
        - `CONTAINER_HOSTS_KEYS`
        - `AUTH_TOKEN`
-       - ... and maybe `START_PORT`
+       - ... and maybe `START_PORT` and `CONTAINER_DISTRIBUTION_METHOD`
 - run `make build` to create the docker container
 - run `make up`, it will start the container and provide `wrp-distributor` on the public port `7777`
 - actually set up at least one containerHost
     - configure the server of your choice (as long as it's Linux 😅) with Docker
     - add a user dedicated to run the containers, add it to the group `docker` to allow it to manage containers
         - IMPORTANT: this allows this user to manage ALL containers on that host, so you most likely want to put this in a VM itself, lock this user down further and allow logins only from your expected ingress IP. It could very well happen that this software has a catastrophic bug exposing the SSH keys, even if unlikely. This software is NOT INTENDED FOR ENDUSERS and requires profound knowledge to operate it in a secure manner. I won't go into detail of this, because if I need to you're not the target group to be honest.
-    - create an SSH keypair without password to allow `wrp-distributor` to access the host(s). If you configure multiple hosts, you should be a dedicated keypair for each of them. Then install this key with `ssh-copy-id` to the user account of the host
+    - create an SSH keypair to allow `wrp-distributor` to access the host(s). If you configure multiple hosts, you should use a dedicated keypair for each of them. Then install this key with `ssh-copy-id` to the user account of the host
     - make sure you can ssh with that key into the host
     - make sure you can run docker with that user on that host (i.e. run the helloworld container)
     - put the keypair into `./ssh`
     - adjust your `.env`
        - add host to `CONTAINER_HOSTS`, either as DNS name or IP
+       - adjust `MAX_CONTAINERS_RUNNING`
        - add authentication data to `CONTAINER_HOSTS_KEYS`
            - format is `userName~filenameOfPrivateKey`
+               - if your key is password protected, it would be `userName~filenameOfPrivateKey~keyPassword`  
 - Repeat the previous step for as many hosts as you want, the architecture of this distributor can easily handle more requests than you can provide hosts to run on. Except you're some cloud provider
+- `.env` vars `MAX_CONTAINERS_RUNNING`, `CONTAINER_HOSTS` and `CONTAINER_HOSTS_KEYS` must always contain the same number of elements
+- Set `CONTAINER_DISTRIBUTION_METHOD` to control the load balancing. The first host used will always be random. Available values:
+    - `equal` - will distribute containers equally over all hosts. To use this all hosts should have the same value set in `MAX_CONTAINERS_RUNNING`, everything else is untested
+        - if all hosts currently run the same number of containers, the next one will be chosen randomly
+    - `fillhost` - will fill the first host, then use the next and so on (the default)
 - In case you're running this in a production setup: provide a reverse proxy to expose `wrp-distributor` via your default webserver. Make sure you don't leak sensitive data like SSH keys etc.
 
 #### The hard way ####
@@ -84,9 +91,8 @@ Points you should look into:
 - allow login only from the expected ingress IP (= your `wrp-distributor` host)
 
 ### TODO ###
-- Implement load balancing for containerHosts
-    - best case: check available resources and dynamically scale
-    - easy case: make MAX_CONTAINERS per containerHost 
-- add purpose-bound Exception classes
-- introduce service for config/env handling
+- add purpose-bound Exception classes (in progress)
+- introduce service for config/env handling (not needed I think)
 - strip down php container, guess we don't need most extensions
+- no such container on shutdown shouldn't be treated as an error
+- move docker image name to env var

@@ -15,6 +15,7 @@ $environmentVarsToLoad = [
     'MAX_CONTAINERS_RUNNING', 
     'CONTAINER_HOSTS', 
     'CONTAINER_HOSTS_KEYS',
+    'CONTAINER_DISTRIBUTION_METHOD',
     'SESSION_DATABASE_DSN',
     'SESSION_DATABASE_USER',
     'SESSION_DATABASE_PASS',
@@ -33,10 +34,29 @@ if (!isset($_SERVER['HTTP_BEARER']) || $_ENV['AUTH_TOKEN'] !== $_SERVER['HTTP_BE
 
 $pdo = new \PDO($_ENV['SESSION_DATABASE_DSN'], $_ENV['SESSION_DATABASE_USER'], $_ENV['SESSION_DATABASE_PASS']);
 $logger = new Logger();
-$serviceContainer = new ServiceContainer(
-    $logger,
-    $pdo,
-);
+try {
+    $serviceContainer = new ServiceContainer(
+        $logger,
+        $pdo,
+    );
+} catch (\Throwable $throwable) {
+    $logger->error('Startup error: invalid container host configuration!');
+
+    http_response_code(500);
+    echo sprintf(
+        '
+            <h1>%s</h1>
+            <p>%s</p>
+            <p>
+                <pre>%s</pre>
+            </p>',
+        'Startup error: invalid container host configuration!',
+        $throwable->getMessage(),
+        $throwable->getTraceAsString()
+    );
+
+    exit(1);
+}
 
 $currentClientIp = trim($_SERVER['REMOTE_ADDR']);
 $currentClientUserAgent = trim($_SERVER['HTTP_USER_AGENT']);

@@ -4,6 +4,7 @@
 
 namespace AmiDev\WrpDistributor;
 
+use Monolog\ErrorHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger as MonologLogger;
 
@@ -14,6 +15,7 @@ class Logger
     public function __construct()
     {
         $log = new MonologLogger('distributor');
+        ErrorHandler::register($log);
         $log->pushHandler(new RotatingFileHandler('logs/distributor.log', 30));
 
         $this->logger = $log;

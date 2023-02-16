@@ -11,6 +11,6 @@ CREATE TABLE `sessions`
     PRIMARY KEY (`id`),
     UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,
     UNIQUE INDEX `wrpContainerId_UNIQUE` (`wrpContainerId` ASC) VISIBLE,
-    UNIQUE INDEX `port_UNIQUE` (`port` ASC) VISIBLE,
+    UNIQUE INDEX `containerHost_AND_port_UNIQUE` (`containerHost`(255), `port`) VISIBLE,
     UNIQUE INDEX `clientIp_AND_clientUserAgent_UNIQUE` (`clientIp`, `clientUserAgent`(255)) VISIBLE
 );

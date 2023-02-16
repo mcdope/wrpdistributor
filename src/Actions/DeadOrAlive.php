@@ -21,6 +21,7 @@ readonly class DeadOrAlive implements ActionInterface
             $portsUsedCount = $this->serviceContainer->dockerManager->countsPortsUsed();
             $containerHostsAvailable = $this->serviceContainer->dockerManager->countAvailableContainerHosts();
             $sessionsPerHost = $this->serviceContainer->dockerManager->countSessionsPerContainerHost();
+            $totalMaxContainers = $this->serviceContainer->dockerManager->countTotalMaxContainers();
 
             echo '<h1>wrp-distributor status</h1>';
             echo '<p>It\'s alive! Here are some statistics about the current instance:</p>';
@@ -32,16 +33,17 @@ readonly class DeadOrAlive implements ActionInterface
                 echo '<li>Container hosts in use:<br><ol>';
                 foreach ($sessionsPerHost as $containerHost => $sessionCountCurrentHost) {
                     echo sprintf(
-                        "<li>%s: %s sessions running</li>",
+                        "<li>%s: %d sessions running (allowed: %d)</li>",
                         substr(md5($containerHost), 0, 8),
-                        $sessionCountCurrentHost['count']
+                        $sessionCountCurrentHost['count'],
+                        $this->serviceContainer->dockerManager->getMaxContainersForHost($containerHost)
                     );
                 }
                 echo '</ol></li>';
             }
             echo sprintf(
                 "<li>Unused configuration potential / remaining containers: %s</li>",
-                $_ENV['MAX_CONTAINERS_RUNNING'] - $portsUsedCount
+                $totalMaxContainers - $portsUsedCount
             );
             echo '</ul>';
 

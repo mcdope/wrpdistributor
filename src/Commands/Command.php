@@ -13,10 +13,13 @@ class Command extends SymfonyConsoleCommand
         protected ?ServiceContainer $serviceContainer = null
     )
     {
+        parent::__construct();
+
         $environmentVarsToLoad = [
             'MAX_CONTAINERS_RUNNING',
             'CONTAINER_HOSTS',
             'CONTAINER_HOSTS_KEYS',
+            'CONTAINER_DISTRIBUTION_METHOD',
             'SESSION_DATABASE_DSN',
             'SESSION_DATABASE_USER',
             'SESSION_DATABASE_PASS',
@@ -30,11 +33,16 @@ class Command extends SymfonyConsoleCommand
 
         $pdo = new \PDO($_ENV['SESSION_DATABASE_DSN'], $_ENV['SESSION_DATABASE_USER'], $_ENV['SESSION_DATABASE_PASS']);
         $logger = new Logger();
-        $this->serviceContainer = new ServiceContainer(
-            $logger,
-            $pdo,
-        );
 
-        parent::__construct();
+        try {
+            $this->serviceContainer = new ServiceContainer(
+                $logger,
+                $pdo,
+            );
+        } catch (\Throwable) {
+            $logger->error('Startup error: invalid container host configuration!');
+
+            exit(self::FAILURE);
+        }
     }
 }

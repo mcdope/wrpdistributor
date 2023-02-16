@@ -8,7 +8,7 @@ services:
 
   nginx_wrpdistributor:
     container_name: nginx_wrpdistributor
-    image: nginx:1.23.3-alpine
+    image: nginx:latest
     ports:
       - "127.0.0.1:7777:80"
     volumes:
