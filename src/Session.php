@@ -43,7 +43,7 @@ class Session {
     /**
      * @throws \RuntimeException
      */
-    public function upsert(): bool
+    public function upsert(): void
     {
         $this->lastUsed = new \DateTime();
 
@@ -112,20 +112,18 @@ class Session {
 
             $this->id = (int) $id;
         }
-
-        return true;
     }
 
     /**
      * @throws \LogicException
      */
-    public function delete(): bool
+    public function delete(): void
     {
         if (null === $this->id) {
             throw new \LogicException('Session not persisted yet!');
         }
 
-        return $this->serviceContainer->pdo
+        $this->serviceContainer->pdo
             ->prepare("DELETE FROM `sessions` WHERE id = :id")
             ->execute(['id' => $this->id]);
     }

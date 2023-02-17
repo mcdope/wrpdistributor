@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <files psalm-version="5.6.0@e784128902dfe01d489c4123d69918a9f3c1eac5">
+  <file src="index.php">
+    <PossiblyUndefinedArrayOffset>
+      <code>$_SERVER['HTTP_USER_AGENT']</code>
+      <code>$_SERVER['REMOTE_ADDR']</code>
+      <code>$_SERVER['REQUEST_METHOD']</code>
+    </PossiblyUndefinedArrayOffset>
+    <PossiblyUndefinedStringArrayOffset>
+      <code>$_ENV['AUTH_TOKEN']</code>
+      <code>$_ENV['SESSION_DATABASE_DSN']</code>
+      <code>$_ENV['SESSION_DATABASE_PASS']</code>
+      <code>$_ENV['SESSION_DATABASE_USER']</code>
+    </PossiblyUndefinedStringArrayOffset>
+  </file>
   <file src="src/Commands/Command.php">
     <PossiblyUndefinedStringArrayOffset>
       <code>$_ENV['SESSION_DATABASE_DSN']</code>

@@ -6,6 +6,8 @@
         ensureArrayStringOffsetsExist="true"
         findUnusedPsalmSuppress="true"
         findUnusedVariablesAndParams="true"
+        findUnusedBaselineEntry="true"
+        findUnusedCode="true"
         strictBinaryOperands="true"
         useDocblockPropertyTypes="true"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,6 +16,8 @@
         errorBaseline="/var/www/.tooling/psalm/psalm-baseline.xml"
 >
     <projectFiles>
+        <file name="index.php"></file>
+        <file name="bin/console"></file>
         <directory name="src"/>
         <ignoreFiles allowMissingFiles="false">
             <directory name="vendor"/>
