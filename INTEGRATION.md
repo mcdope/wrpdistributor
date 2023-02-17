@@ -13,6 +13,7 @@ All requests:
 	- a statuscode of 400 in case your request doesn't make sense (or some requirements failed, unlikely)
 	- a statuscode of 401 if your "Bearer" header was invalid
 	- a statuscode of 405 if you used an unsupported HTTP method
+    - a statuscode of 500 in case of a critical startup error
 	- a statuscode of 503 if the container couldn't be started (for PUT requests) or stopped (for DELETE requests)
 
 Control is in quote since there is not much to be done.
