@@ -6,6 +6,7 @@ namespace AmiDev\WrpDistributor\Commands;
 
 use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\Session;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,7 +33,11 @@ final class CleanUnusedSessions extends Command
         return $unusedSessionsStmt->fetchAll(0);
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     *
+     * @throws InvalidArgumentException
+     */
     protected function configure(): void
     {
         $this->setName('cleanup:sessions');
@@ -45,7 +50,11 @@ final class CleanUnusedSessions extends Command
         );
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     *
+     * @throws InvalidArgumentException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $timeout = (int) $input->getArgument('timeout');

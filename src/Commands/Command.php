@@ -5,13 +5,23 @@ namespace AmiDev\WrpDistributor\Commands;
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidEncodingException;
+use Dotenv\Exception\InvalidFileException;
+use Dotenv\Exception\InvalidPathException;
 use Symfony\Component\Console\Command\Command as SymfonyConsoleCommand;
+use Symfony\Component\Console\Exception\LogicException;
 
 class Command extends SymfonyConsoleCommand
 {
-    public function __construct(
-        protected ?ServiceContainer $serviceContainer = null
-    )
+    protected ServiceContainer $serviceContainer;
+
+    /**
+     * @throws LogicException
+     * @throws InvalidPathException
+     * @throws InvalidEncodingException
+     * @throws InvalidFileException
+     */
+    public function __construct()
     {
         parent::__construct();
 

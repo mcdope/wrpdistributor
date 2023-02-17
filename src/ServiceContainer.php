@@ -7,12 +7,16 @@ use AmiDev\WrpDistributor\Exceptions\Docker\HostConfigurationMismatchException;
 class ServiceContainer
 {
     /**
+     * @psalm-readonly
+     */
+    public DockerManager $dockerManager;
+
+    /**
      * @throws HostConfigurationMismatchException
      */
     public function __construct(
         public Logger $logger,
         public \PDO $pdo,
-        public DockerManager $dockerManager,
     ) {
         $this->dockerManager = new DockerManager($this);
     }

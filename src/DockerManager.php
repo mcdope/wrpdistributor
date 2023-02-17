@@ -53,7 +53,7 @@ class DockerManager
 
     public function countTotalMaxContainers(): int
     {
-        return array_sum($this->maxContainers);
+        return (int) array_sum($this->maxContainers);
     }
 
     public function getMaxContainersForHost(string $containerHost): int
@@ -65,6 +65,7 @@ class DockerManager
 
     /**
      * @throws ContainerStartException
+     * @throws \RuntimeException
      */
     public function startContainer(Session $session): void
     {
@@ -78,7 +79,7 @@ class DockerManager
                     'Session %d already has container %s on host %s attached!',
                     $session->id,
                     $session->wrpContainerId,
-                    $session->containerHost
+                    (string) $session->containerHost
                 ),
                 self::EXCEPTION_ALREADY_HAS_CONTAINER
             );
@@ -108,10 +109,14 @@ class DockerManager
         $session->containerHost = $determinedContainerHost['host'];
         [$userName, $privateKey] = $determinedContainerHost['privateKey'];
 
-        $key = PublicKeyLoader::load(
-            file_get_contents('ssh/' . $privateKey),
-            $determinedContainerHost['privateKey'][2] ?? false
-        );
+        if (isset($determinedContainerHost['privateKey'][2])) {
+            $key = PublicKeyLoader::load(
+                file_get_contents('ssh/' . $privateKey),
+                $determinedContainerHost['privateKey'][2]
+            );
+        } else {
+            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
+        }
         $ssh = new SSH2($session->containerHost);
         if (!$ssh->login($userName, $key)) {
             $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost');
@@ -128,7 +133,7 @@ class DockerManager
 
         if (!$ssh->exec(
             $containerStartCommand,
-            function($shellOutput) use ($session)
+            function(string $shellOutput) use ($session)
             {
                 if (!$this->isContainerIdValid($shellOutput)) {
                     $this->serviceContainer->logger->warning(
@@ -168,6 +173,10 @@ class DockerManager
         }
     }
 
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     */
     public function stopContainer(Session $session): void
     {
         if (null === $session->id) {
@@ -188,10 +197,14 @@ class DockerManager
         $containerHost = $this->containerHosts[$hostIndex];
         [$userName, $privateKey] = $this->privateKeys[$hostIndex];
 
-        $key = PublicKeyLoader::load(
-            file_get_contents('ssh/' . $privateKey),
-            $this->privateKeys[$hostIndex][2] ?? false
-        );
+        if (isset($this->privateKeys[$hostIndex][2])) {
+            $key = PublicKeyLoader::load(
+                file_get_contents('ssh/' . $privateKey),
+                $this->privateKeys[$hostIndex][2]
+            );
+        } else {
+            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
+        }
         $ssh = new SSH2($containerHost);
         if (!$ssh->login($userName, $key)) {
             throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
@@ -202,7 +215,7 @@ class DockerManager
             $session->wrpContainerId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function($shellOutput) use ($session) {
+        if (!$ssh->exec($containerStopCommand, function(string $shellOutput) use ($session) {
             if (!$this->isContainerIdValid($shellOutput)) {
                 $this->serviceContainer->logger->info(
                     'Container stop seems to have failed, unexpected output from Docker. Most likely the container already is gone.',
@@ -274,6 +287,8 @@ class DockerManager
     /**
      * @todo: actually this gets the next port, not the first unused. should also use lower ports then max-1 if still larger then start port
      * @noinspection PhpUnusedParameterInspection
+     * @psalm-suppress UnusedParam
+     * @throws \RuntimeException
      */
     private function findUnusedPort(string $containerHost): int
     {
@@ -290,11 +305,11 @@ class DockerManager
                 $this->serviceContainer->logger->debug(
                     'findUnusedPort() falling back to START_PORT because of empty result',
                     [
-                        'nextPort' => $_ENV['START_PORT'],
+                        'nextPort' => (int) $_ENV['START_PORT'],
                     ]
                 );
 
-                return $_ENV['START_PORT'];
+                return (int) $_ENV['START_PORT'];
             }
 
             if (65535 <= $result['nextPort']) {
@@ -304,21 +319,21 @@ class DockerManager
             $this->serviceContainer->logger->debug(
                 'findUnusedPort() determined next port to use',
                 [
-                    'nextPort' => $result['nextPort'],
+                    'nextPort' => (int) $result['nextPort'],
                 ]
             );
 
-            return $result['nextPort'];
+            return (int) $result['nextPort'];
         }
 
         $this->serviceContainer->logger->debug(
             'findUnusedPort() falling back to START_PORT at end of method',
             [
-                'nextPort' => $_ENV['START_PORT'],
+                'nextPort' => (int) $_ENV['START_PORT'],
             ]
         );
 
-        return $_ENV['START_PORT'];
+        return (int) $_ENV['START_PORT'];
     }
 
 
@@ -373,6 +388,9 @@ class DockerManager
         );
     }
 
+    /**
+     * @throws LoadBalancingFailedException
+     */
     public function getHostByEqualStrategy(array $sessionCountByContainerHost): array
     {
         arsort($sessionCountByContainerHost);
@@ -391,8 +409,13 @@ class DockerManager
                 ]
             );
 
+            $keyOfFirstUnusedHost = array_key_first($unusedContainerHosts);
+            if (null === $keyOfFirstUnusedHost) {
+                throw new LoadBalancingFailedException('Couldn\t find $unusedContainerHosts key for first unused host!');
+            }
+
             $indexOfFirstUnusedContainerHost = array_search(
-                $unusedContainerHosts[array_key_first($unusedContainerHosts)],
+                $unusedContainerHosts[$keyOfFirstUnusedHost],
                 $this->containerHosts,
                 true
             );
@@ -466,6 +489,9 @@ class DockerManager
         throw new LoadBalancingFailedException('Equal load balancing failed to find containerHost!');
     }
 
+    /**
+     * @throws LoadBalancingFailedException
+     */
     public function getHostByFillhostStrategy(array $sessionCountByContainerHost): array
     {
         asort($sessionCountByContainerHost);
@@ -506,8 +532,13 @@ class DockerManager
                 ]
             );
 
+            $keyOfFirstUnusedHost = array_key_first($unusedContainerHosts);
+            if (null === $keyOfFirstUnusedHost) {
+                throw new LoadBalancingFailedException('Couldn\t find $unusedContainerHosts key for first unused host!');
+            }
+
             $indexOfFirstUnusedContainerHost = array_search(
-                $unusedContainerHosts[array_key_first($unusedContainerHosts)],
+                $unusedContainerHosts[$keyOfFirstUnusedHost],
                 $this->containerHosts,
                 true
             );

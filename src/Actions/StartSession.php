@@ -29,8 +29,8 @@ readonly class StartSession implements ActionInterface
 
             echo sprintf(
                 '<xml><wrpUrl>%s:%d</wrpUrl></xml>',
-                $session->containerHost,
-                $session->port
+                (string) $session->containerHost,
+                (int) $session->port
             );
 
             exit(0);
@@ -52,8 +52,8 @@ readonly class StartSession implements ActionInterface
 
                 echo sprintf(
                     '<xml><wrpUrl>%s:%d</wrpUrl></xml>',
-                    $session->containerHost,
-                    $session->port
+                    (string) $session->containerHost,
+                    (int) $session->port
                 );
 
                 exit(0);

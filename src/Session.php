@@ -40,6 +40,9 @@ class Session {
         $this->lastUsed = $lastUsed;
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function upsert(): bool
     {
         $this->lastUsed = new \DateTime();
@@ -67,7 +70,7 @@ class Session {
                 'wrpContainerId' => $this->wrpContainerId,
                 'containerHost' => $this->containerHost,
                 'port' => $this->port,
-                'started' => $this->started->format('c'),
+                'started' => $this->started?->format('c'),
             ];
         } else {
             $query = "UPDATE `sessions` SET
@@ -101,12 +104,21 @@ class Session {
         }
 
         if (null === $this->id) {
-            $this->id = $this->serviceContainer->pdo->lastInsertId();
+            $id = $this->serviceContainer->pdo->lastInsertId();
+
+            if (false === $id) {
+                throw new \RuntimeException('Couldn\'t insert session into database!');
+            }
+
+            $this->id = (int) $id;
         }
 
         return true;
     }
 
+    /**
+     * @throws \LogicException
+     */
     public function delete(): bool
     {
         if (null === $this->id) {
@@ -160,12 +172,12 @@ class Session {
 
         return new self(
             $serviceContainer,
-            $sessionData['clientIp'],
-            $sessionData['clientUserAgent'],
-            $sessionData['id'],
-            $sessionData['wrpContainerId'],
-            $sessionData['containerHost'],
-            $sessionData['port'],
+            (string) $sessionData['clientIp'],
+            (string) $sessionData['clientUserAgent'],
+            (int) $sessionData['id'],
+            (string) $sessionData['wrpContainerId'],
+            (string) $sessionData['containerHost'],
+            (int) $sessionData['port'],
             new \DateTime($sessionData['started']),
             new \DateTime($sessionData['lastUsed'] ?? 'now'),
         );
@@ -193,12 +205,12 @@ class Session {
 
         return new self(
             $serviceContainer,
-            $sessionData['clientIp'],
-            $sessionData['clientUserAgent'],
-            $sessionData['id'],
-            $sessionData['wrpContainerId'],
-            $sessionData['containerHost'],
-            $sessionData['port'],
+            (string) $sessionData['clientIp'],
+            (string) $sessionData['clientUserAgent'],
+            (int) $sessionData['id'],
+            (string) $sessionData['wrpContainerId'],
+            (string) $sessionData['containerHost'],
+            (int) $sessionData['port'],
             new \DateTime($sessionData['started']),
             new \DateTime($sessionData['lastUsed'] ?? 'now'),
         );
