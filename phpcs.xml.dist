@@ -13,4 +13,15 @@
     <file>src/</file>
     <file>index.php</file>
     <file>bin/console</file>
+
+     <rule ref="Generic.Files.LineLength">
+      <properties>
+       <property name="lineLimit" value="180"/>
+       <property name="absoluteLineLimit" value="180"/>
+      </properties>q
+     </rule>
+
+     <rule ref="PSR1.Files.SideEffects">
+         <exclude-pattern>src/Actions/</exclude-pattern>
+     </rule>
 </ruleset>

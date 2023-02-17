@@ -2,7 +2,8 @@
 
 namespace AmiDev\WrpDistributor;
 
-class Session {
+class Session
+{
     public string $clientIp;
     public string $clientUserAgent;
     public ?int $id = null;
@@ -16,14 +17,14 @@ class Session {
 
     private function __construct(
         ServiceContainer $serviceContainer,
-         string $clientIp,
-         string $clientUserAgent,
-         ?int $id = null,
-         ?string $wrpContainerId = null,
-         ?string $containerHost = null,
-         ?int $port = null,
-         ?\DateTime $started = null,
-         ?\DateTime $lastUsed = null
+        string $clientIp,
+        string $clientUserAgent,
+        ?int $id = null,
+        ?string $wrpContainerId = null,
+        ?string $containerHost = null,
+        ?int $port = null,
+        ?\DateTime $started = null,
+        ?\DateTime $lastUsed = null
     ) {
         if (null === $started) {
             $this->started = new \DateTime();
@@ -100,7 +101,9 @@ class Session {
                 ]
             );
 
-            throw new \RuntimeException('Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode());
+            throw new \RuntimeException(
+                'Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode()
+            );
         }
 
         if (null === $this->id) {
@@ -132,8 +135,7 @@ class Session {
         ServiceContainer $serviceContainer,
         string $clientIp,
         string $clientUserAgent
-    ): self
-    {
+    ): self {
         return new self(
             $serviceContainer,
             $clientIp,
@@ -148,14 +150,12 @@ class Session {
         ServiceContainer $serviceContainer,
         string $clientIp,
         string $clientUserAgent
-    ): self
-    {
+    ): self {
         $sessionDataStmt = $serviceContainer->pdo->prepare(
             "SELECT * FROM `sessions` WHERE clientIp = :clientIp AND clientUserAgent = :clientUserAgent"
         );
 
-        if (
-            !$sessionDataStmt
+        if (!$sessionDataStmt
             ->execute([
                 'clientIp' => $clientIp,
                 'clientUserAgent' => $clientUserAgent,
@@ -187,8 +187,7 @@ class Session {
     public static function loadFromDatabaseById(
         ServiceContainer $serviceContainer,
         int $sessionId
-    ): self
-    {
+    ): self {
         $sessionDataStmt = $serviceContainer->pdo->prepare(
             "SELECT * FROM `sessions` WHERE id = :sessionId"
         );

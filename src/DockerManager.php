@@ -88,7 +88,9 @@ class DockerManager
         try {
             $determinedContainerHost = $this->getHostByBalanceStrategy();
         } catch (LoadBalancingException) {
-            throw new ContainerStartException('Could not find an available containerHost, try again later or adjust distributor configuration.');
+            throw new ContainerStartException(
+                'Could not find an available containerHost, try again later or adjust distributor configuration.'
+            );
         }
 
         $this->serviceContainer->logger->debug(
@@ -103,7 +105,9 @@ class DockerManager
         try {
             $session->port = $this->findUnusedPort($determinedContainerHost['host']);
         } catch (\RuntimeException) {
-            throw new ContainerStartException('Capacity limited reached, try again later or adjust distributor configuration.');
+            throw new ContainerStartException(
+                'Capacity limited reached, try again later or adjust distributor configuration.'
+            );
         }
 
         $session->containerHost = $determinedContainerHost['host'];
@@ -133,8 +137,7 @@ class DockerManager
 
         if (!$ssh->exec(
             $containerStartCommand,
-            function(string $shellOutput) use ($session)
-            {
+            function (string $shellOutput) use ($session) {
                 if (!$this->isContainerIdValid($shellOutput)) {
                     $this->serviceContainer->logger->warning(
                         'Container start seems to have failed, unexpected output from Docker',
@@ -146,7 +149,9 @@ class DockerManager
                         ]
                     );
 
-                    throw new ContainerStartException('Docker command returned unexpected output on container start! Output was: ' . $shellOutput);
+                    throw new ContainerStartException(
+                        'Docker command returned unexpected output on container start! Output was: ' . $shellOutput
+                    );
                 }
 
                 $shellOutput = trim($shellOutput);
@@ -160,8 +165,8 @@ class DockerManager
                         'shellOutput' => $shellOutput,
                     ]
                 );
-            }) // end ssh exec call
-        ) { // start if body
+            }
+        )) { // start if body
             $this->serviceContainer->logger->warning(
                 'startContainer() failed to spin up new container',
                 [
@@ -169,7 +174,9 @@ class DockerManager
                 ]
             );
 
-            throw new ContainerStartException("Can't send command to start container on determined host! Temporary network issue maybe?");
+            throw new ContainerStartException(
+                "Can't send command to start container on determined host! Temporary network issue maybe?"
+            );
         }
     }
 
@@ -215,7 +222,7 @@ class DockerManager
             $session->wrpContainerId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function(string $shellOutput) use ($session) {
+        if (!$ssh->exec($containerStopCommand, function (string $shellOutput) use ($session) {
             if (!$this->isContainerIdValid($shellOutput)) {
                 $this->serviceContainer->logger->info(
                     'Container stop seems to have failed, unexpected output from Docker. Most likely the container already is gone.',

@@ -2,4 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class HostConfigurationMismatchException extends \Exception {}
+class HostConfigurationMismatchException extends \Exception
+{
+
+}

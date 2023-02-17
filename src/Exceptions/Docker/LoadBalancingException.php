@@ -2,4 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class LoadBalancingException extends \InvalidArgumentException {}
+class LoadBalancingException extends \InvalidArgumentException
+{
+
+}

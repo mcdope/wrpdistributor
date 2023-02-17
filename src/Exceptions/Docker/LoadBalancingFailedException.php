@@ -2,4 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class LoadBalancingFailedException extends LoadBalancingException {}
+class LoadBalancingFailedException extends LoadBalancingException
+{
+
+}

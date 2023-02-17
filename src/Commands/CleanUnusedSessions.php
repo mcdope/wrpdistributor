@@ -71,8 +71,7 @@ final class CleanUnusedSessions extends Command
         foreach ($unusedSessions as $sessionToCleanup) {
             try {
                 $session = Session::loadFromDatabaseById($this->serviceContainer, (int) $sessionToCleanup['id']);
-                if (
-                    !empty($sessionToCleanup['port']) &&
+                if (!empty($sessionToCleanup['port']) &&
                     !empty($sessionToCleanup['containerHost']) &&
                     !empty($sessionToCleanup['wrpContainerId'])
                 ) {

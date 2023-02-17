@@ -2,4 +2,6 @@
 
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class InvalidBalanceStrategyException extends LoadBalancingException {}
+class InvalidBalanceStrategyException extends LoadBalancingException
+{
+}

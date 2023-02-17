@@ -2,4 +2,7 @@
 
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class ContainerStartException extends \Exception {}
+class ContainerStartException extends \Exception
+{
+
+}

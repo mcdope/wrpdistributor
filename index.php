@@ -12,8 +12,8 @@ use AmiDev\WrpDistributor\Session;
 
 // Init stuff
 $environmentVarsToLoad = [
-    'MAX_CONTAINERS_RUNNING', 
-    'CONTAINER_HOSTS', 
+    'MAX_CONTAINERS_RUNNING',
+    'CONTAINER_HOSTS',
     'CONTAINER_HOSTS_KEYS',
     'CONTAINER_DISTRIBUTION_METHOD',
     'SESSION_DATABASE_DSN',

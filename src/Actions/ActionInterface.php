@@ -8,7 +8,8 @@ use AmiDev\WrpDistributor\Session;
 /**
  * @psalm-api
  */
-interface ActionInterface {
+interface ActionInterface
+{
     public function __construct(ServiceContainer $serviceContainer);
     public function __invoke(Session $session): void;
 }
