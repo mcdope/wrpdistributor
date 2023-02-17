@@ -56,6 +56,9 @@ psalm:
 phpcs:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
+phpcs-fix:
+	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer fix src/ index.php bin/console
+
 
 bash_php:
 	docker-compose exec php_$(PROJECT_NAME) bash
