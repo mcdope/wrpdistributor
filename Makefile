@@ -50,6 +50,10 @@ composer:
 composer_require:
 	docker-compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
 
+psalm:
+	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+
+
 bash_php:
 	docker-compose exec php_$(PROJECT_NAME) bash
 

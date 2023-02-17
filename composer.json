@@ -12,7 +12,8 @@
         "symfony/console": "^6.2"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "vimeo/psalm": "^5.6"
     },
     "license": "AGPLv3",
     "autoload": {
