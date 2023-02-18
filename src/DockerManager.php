@@ -38,12 +38,25 @@ class DockerManager
 
     public function countSessionsPerContainerHost(): array
     {
-        return $this->serviceContainer->pdo->query("
+        $usedHosts = $this->serviceContainer->pdo->query("
             SELECT containerHost, COUNT(containerHost) as count
             FROM `sessions`
             WHERE containerHost IS NOT NULL
             GROUP BY containerHost
         ")->fetchAll();
+
+        $return = [];
+        foreach ($usedHosts as $host) {
+            $return[$host['containerHost']] = $host['count'];
+        }
+
+        foreach ($this->containerHosts as $host) {
+            if (!array_key_exists($host, $return)) {
+                $return[$host] = 0;
+            }
+        }
+
+        return $return;
     }
 
     public function countsPortsUsed(): int
@@ -265,8 +278,8 @@ class DockerManager
         $balanceStrategy = $_ENV['CONTAINER_DISTRIBUTION_METHOD'];
         $containerHostsWithSessionCount = $this->countSessionsPerContainerHost();
         $sessionCountByContainerHost = [];
-        foreach ($containerHostsWithSessionCount as $containerHostWithSessionCount) {
-            $sessionCountByContainerHost[$containerHostWithSessionCount['containerHost']] = $containerHostWithSessionCount['count'];
+        foreach ($containerHostsWithSessionCount as $containerHost => $sessionCount) {
+            $sessionCountByContainerHost[$containerHost] = $sessionCount;
         }
 
         if (0 === \count($sessionCountByContainerHost)) {
