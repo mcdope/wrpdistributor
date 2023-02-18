@@ -23,6 +23,20 @@ readonly class DeadOrAlive implements ActionInterface
             $sessionsPerHost = $this->serviceContainer->dockerManager->countSessionsPerContainerHost();
             $totalMaxContainers = $this->serviceContainer->dockerManager->countTotalMaxContainers();
 
+            if ('json' === $_REQUEST['format']) {
+                $data = [
+                    'activeSessions' => $sessionCount,
+                    'containersRunning' => $portsUsedCount,
+                    'remainingContainers' => $totalMaxContainers - $portsUsedCount,
+                    'containerHosts' => $containerHostsAvailable,
+                    'containerHostsWithSessions' => $sessionsPerHost,
+                ];
+
+                header('Content-Type', "application/json");
+                echo json_encode($data, JSON_THROW_ON_ERROR);
+                exit(0);
+            }
+
             echo '<h1>wrp-distributor status</h1>';
             echo '<p>It\'s alive! Here are some statistics about the current instance:</p>';
             echo '<ul>';

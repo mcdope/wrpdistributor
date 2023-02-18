@@ -173,9 +173,9 @@ class Session
             (string) $sessionData['clientIp'],
             (string) $sessionData['clientUserAgent'],
             (int) $sessionData['id'],
-            (string) $sessionData['wrpContainerId'],
-            (string) $sessionData['containerHost'],
-            (int) $sessionData['port'],
+            !empty($sessionData['wrpContainerId']) ? (string) $sessionData['wrpContainerId'] : null,
+            !empty($sessionData['containerHost']) ? (string) $sessionData['containerHost'] : null,
+            !empty($sessionData['port']) ? (int) $sessionData['port'] : null,
             new \DateTime($sessionData['started']),
             new \DateTime($sessionData['lastUsed'] ?? 'now'),
         );
