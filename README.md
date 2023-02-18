@@ -96,3 +96,4 @@ Points you should look into:
 - strip down php container, guess we don't need most extensions
 - no such container on shutdown shouldn't be treated as an error
 - move docker image name to env var
+- make servicecontainer selfcontained (instantiate everything in constructor)
