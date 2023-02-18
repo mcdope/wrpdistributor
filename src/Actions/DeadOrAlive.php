@@ -12,7 +12,7 @@ readonly class DeadOrAlive implements ActionInterface
     }
 
     /**
-     * Just upsert()s the session to update lastUsed, to prevent it from timing out
+     * Displays a small status information pages
      */
     public function __invoke(Session $session): void
     {
@@ -22,20 +22,6 @@ readonly class DeadOrAlive implements ActionInterface
             $containerHostsAvailable = $this->serviceContainer->dockerManager->countAvailableContainerHosts();
             $sessionsPerHost = $this->serviceContainer->dockerManager->countSessionsPerContainerHost();
             $totalMaxContainers = $this->serviceContainer->dockerManager->countTotalMaxContainers();
-
-            if ('json' === $_REQUEST['format']) {
-                $data = [
-                    'activeSessions' => $sessionCount,
-                    'containersRunning' => $portsUsedCount,
-                    'remainingContainers' => $totalMaxContainers - $portsUsedCount,
-                    'containerHosts' => $containerHostsAvailable,
-                    'containerHostsWithSessions' => $sessionsPerHost,
-                ];
-
-                header('Content-Type', "application/json");
-                echo json_encode($data, JSON_THROW_ON_ERROR);
-                exit(0);
-            }
 
             echo '<h1>wrp-distributor status</h1>';
             echo '<p>It\'s alive! Here are some statistics about the current instance:</p>';
@@ -49,7 +35,7 @@ readonly class DeadOrAlive implements ActionInterface
                     echo sprintf(
                         "<li>%s: %d sessions running (allowed: %d)</li>",
                         substr(md5($containerHost), 0, 8),
-                        $sessionCountCurrentHost['count'],
+                        $sessionCountCurrentHost,
                         $this->serviceContainer->dockerManager->getMaxContainersForHost($containerHost)
                     );
                 }
