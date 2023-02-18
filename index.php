@@ -9,6 +9,7 @@ use AmiDev\WrpDistributor\Actions\StopSession;
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
+use AmiDev\WrpDistributor\Statistics;
 
 // Init stuff
 $environmentVarsToLoad = [
@@ -39,6 +40,8 @@ try {
         $logger,
         $pdo,
     );
+
+    Statistics::createStatisticsTableIfNotExisting($serviceContainer);
 } catch (\Throwable $throwable) {
     $logger->error('Startup error: invalid container host configuration!');
 

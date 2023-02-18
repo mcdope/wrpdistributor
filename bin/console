@@ -2,6 +2,8 @@
 <?php
 
 use AmiDev\WrpDistributor\Commands\CleanUnusedSessions;
+use AmiDev\WrpDistributor\Commands\Statistics\Collect;
+use AmiDev\WrpDistributor\Commands\Statistics\DashboardUpdate;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -9,6 +11,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $application = new Symfony\Component\Console\Application;
 
 $application->add(new CleanUnusedSessions());
+$application->add(new Collect());
+$application->add(new DashboardUpdate());
 
 // Run it
 /** @noinspection PhpUnhandledExceptionInspection */

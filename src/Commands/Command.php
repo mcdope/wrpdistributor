@@ -4,6 +4,8 @@ namespace AmiDev\WrpDistributor\Commands;
 
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
+use AmiDev\WrpDistributor\Session;
+use AmiDev\WrpDistributor\Statistics;
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidEncodingException;
 use Dotenv\Exception\InvalidFileException;
@@ -49,6 +51,9 @@ class Command extends SymfonyConsoleCommand
                 $logger,
                 $pdo,
             );
+
+            Session::createSessionTableIfNotExisting($this->serviceContainer);
+            Statistics::createStatisticsTableIfNotExisting($this->serviceContainer);
         } catch (\Throwable) {
             $logger->error('Startup error: invalid container host configuration!');
 

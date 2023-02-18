@@ -275,7 +275,7 @@ class DockerManager
      */
     private function getHostByBalanceStrategy(): array
     {
-        $balanceStrategy = $_ENV['CONTAINER_DISTRIBUTION_METHOD'];
+        $balanceStrategy = isset($_ENV['CONTAINER_DISTRIBUTION_METHOD']) ? $_ENV['CONTAINER_DISTRIBUTION_METHOD'] : 'equal';
         $containerHostsWithSessionCount = $this->countSessionsPerContainerHost();
         $sessionCountByContainerHost = [];
         foreach ($containerHostsWithSessionCount as $containerHost => $sessionCount) {

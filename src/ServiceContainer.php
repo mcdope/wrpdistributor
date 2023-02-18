@@ -12,6 +12,12 @@ class ServiceContainer
     public DockerManager $dockerManager;
 
     /**
+     * @psalm-readonly
+     */
+    public Statistics $statistics;
+
+
+    /**
      * @throws HostConfigurationMismatchException
      */
     public function __construct(
@@ -19,5 +25,6 @@ class ServiceContainer
         public \PDO $pdo,
     ) {
         $this->dockerManager = new DockerManager($this);
+        $this->statistics = new Statistics($this);
     }
 }
