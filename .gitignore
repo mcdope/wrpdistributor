@@ -8,6 +8,7 @@ logs/*
 docker/mysql/data
 docker/mysql/logs
 docker/nginx/logs
+dashboard.html
 
 # Dependencies
 vendor/
