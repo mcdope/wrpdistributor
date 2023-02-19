@@ -14,6 +14,7 @@ class Logger
 
     public function __construct()
     {
+        self::createLogDirectory();
         $log = new MonologLogger('distributor');
         ErrorHandler::register($log);
         $log->pushHandler(new RotatingFileHandler('logs/distributor.log', 30));
@@ -39,5 +40,20 @@ class Logger
     public function debug(string|\Stringable $message, array $context = []): void
     {
         $this->logger->debug($message, $context);
+    }
+
+    private static function createLogDirectory(): bool
+    {
+        if (!file_exists('logs')
+            || (
+                file_exists('logs') &&
+                is_file('logs') &&
+                unlink('logs')
+            )
+        ) {
+            return mkdir('logs');
+        }
+
+        return file_exists('logs') && is_dir('logs');
     }
 }
