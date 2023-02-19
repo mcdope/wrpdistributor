@@ -18,7 +18,7 @@ final class CleanUnusedSessions extends Command
      * @param mixed $timeout
      * @return array|false
      */
-    public function getUnusedSessions(int $timeout): array|false
+    private function getUnusedSessions(int $timeout): array|false
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
             ' SELECT id, wrpContainerId, containerHost, port

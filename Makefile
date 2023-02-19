@@ -80,6 +80,10 @@ statistics_collect:
 statistics_dashboard_update:
 	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
 
+
+containers_log_collect:
+	docker-compose exec php_$(PROJECT_NAME) ./bin/console containers:log:collect
+
 help:
 	@echo ""
 	@echo "${NOCOLOR}Usage: ${CYAN}make [TARGET] [EXTRA_ARGUMENTS]"
