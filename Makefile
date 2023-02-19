@@ -74,26 +74,34 @@ restart: stop up
 cleanup_sessions:
 	docker-compose exec php_$(PROJECT_NAME) ./bin/console cleanup:sessions
 
+statistics_collect:
+	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:collect
+
+statistics_dashboard_update:
+	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
+
 help:
 	@echo ""
 	@echo "${NOCOLOR}Usage: ${CYAN}make [TARGET] [EXTRA_ARGUMENTS]"
 	@echo ""
 	@echo "${NOCOLOR}Targets:"
 	@echo ""
-	@echo "  ${BGREEN}build${YELLOW}             build the containers"
-	@echo "  ${BGREEN}up${YELLOW}                Start the containers"
-	@echo "  ${BGREEN}stop${YELLOW}              Stop the containers"
-	@echo "  ${BGREEN}destroy${YELLOW}           Destroy the containers"
-	@echo "  ${BGREEN}composer${YELLOW}          Run composer install"
-	@echo "  ${BGREEN}composer_require${YELLOW}  Run composer require [PACKAGE]"
-	@echo "  ${BGREEN}bash_php${YELLOW}          Open bash in php container"
-	@echo "  ${BGREEN}bash_nginx${YELLOW}        Open bash in nginx container"
-	@echo "  ${BGREEN}bash_mysql${YELLOW}        Open bash in mysql container"
-	@echo "  ${BGREEN}restart${YELLOW}           Restart the containers"
-	@echo "  ${BGREEN}cleanup_sessions${YELLOW}  Run session cleanup"
+	@echo "  ${BGREEN}build${YELLOW}                        Build the containers"
+	@echo "  ${BGREEN}up${YELLOW}                           Start the containers"
+	@echo "  ${BGREEN}stop${YELLOW}                         Stop the containers"
+	@echo "  ${BGREEN}destroy${YELLOW}                      Destroy the containers"
+	@echo "  ${BGREEN}composer${YELLOW}                     Run composer install"
+	@echo "  ${BGREEN}composer_require${YELLOW}             Run composer require [PACKAGE]"
+	@echo "  ${BGREEN}bash_php${YELLOW}                     Open bash in php container"
+	@echo "  ${BGREEN}bash_nginx${YELLOW}                   Open bash in nginx container"
+	@echo "  ${BGREEN}bash_mysql${YELLOW}                   Open bash in mysql container"
+	@echo "  ${BGREEN}restart${YELLOW}                      Restart the containers"
+	@echo "  ${BGREEN}cleanup_sessions${YELLOW}             Run session cleanup"
+	@echo "  ${BGREEN}statistics_collect${YELLOW}           Collect statistics for the dashboard at this point in time"
+	@echo "  ${BGREEN}statistics_dashboard_update${YELLOW}  Generate dashboard.html from statistics table"
 	@echo ""
 	@echo "${NOCOLOR}Examples:"
 	@echo ""
-	@echo "${BGREEN}up${WHITE}                 ${CYAN}make up"
-	@echo "${BGREEN}composer_require${WHITE}   ${CYAN}make composer_require -e PACKAGE=symfony/dotenv"
+	@echo "${BGREEN}up${WHITE}                 ${CYAN}      make up"
+	@echo "${BGREEN}composer_require${WHITE}   ${CYAN}      make composer_require -e PACKAGE=symfony/dotenv"
 	@echo ""
