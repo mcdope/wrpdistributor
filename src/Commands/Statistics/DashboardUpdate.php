@@ -194,12 +194,8 @@ TPL;
         $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe();
         foreach ($dataPoints as $hostAndCountPerPoint) {
             $labels[] = '';
-            $this->serviceContainer->logger->debug('hostAndCount', $hostAndCountPerPoint);
             foreach ($hostAndCountPerPoint as $containersByHost) {
-                $this->serviceContainer->logger->debug('containersByHost', $containersByHost);
                 foreach ($containersByHost as $host => $containerCount) {
-                    $this->serviceContainer->logger->debug('containerCount', ['count' => $containerCount]);
-
                     if (!array_key_exists($host, $datasets)) {
                         $datasets[$host] = $this->getLineChartDatasetTemplate();
                         $datasets[$host]['label'] = $host;
@@ -235,14 +231,10 @@ TPL;
         $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe();
         foreach ($dataPoints as $dataPoint) {
             $labels[] = '';
-            $this->serviceContainer->logger->debug('dataPoint', $dataPoint);
             foreach ($dataPoint as $valueName => $singleValue) {
                 if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
                     continue;
                 }
-
-                $this->serviceContainer->logger->debug('valueName', ['valueName' => $valueName]);
-                $this->serviceContainer->logger->debug('singleValue', ['singleValue' => $singleValue]);
 
                 if (!array_key_exists($valueName, $datasets)) {
                     $datasets[$valueName] = $this->getLineChartDatasetTemplate();

@@ -58,12 +58,6 @@ class Statistics
 
         $returnValue = [];
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $dataPoint) {
-            $this->serviceContainer->logger->debug(
-                'Datapoint',
-                [
-                    'dataPoint' => $dataPoint,
-                ]
-            );
             $containersPerHost = unserialize($dataPoint['containersInUsePerHost'], []);
 
             foreach ($containersPerHost as $host => $containerCount) {
