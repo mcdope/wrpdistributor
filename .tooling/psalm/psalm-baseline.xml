@@ -55,7 +55,6 @@
       <code>$this-&gt;privateKeys[$indexOfSelectedHost]</code>
     </PossiblyUndefinedIntArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
-      <code>$_ENV['CONTAINER_DISTRIBUTION_METHOD']</code>
       <code>$_ENV['CONTAINER_HOSTS']</code>
       <code>$_ENV['CONTAINER_HOSTS_KEYS']</code>
       <code>$_ENV['MAX_CONTAINERS_RUNNING']</code>
