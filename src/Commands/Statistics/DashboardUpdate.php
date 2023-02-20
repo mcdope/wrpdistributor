@@ -17,7 +17,7 @@ final class DashboardUpdate extends Command
   <head>
         <meta charset="utf-8">
         <title>AmiFox Distributor Dashboard</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
         
         <style type="text/css">
             table {
@@ -83,7 +83,7 @@ final class DashboardUpdate extends Command
               const maxContainers = %maxContainers%;
               
               // slot 1, top left
-              new Chart(containersPerHost, {
+              const slot1 = new Chart(containersPerHost, {
                     type: 'line',
                     data: {
                           labels: containersPerHostLabels,
@@ -93,11 +93,18 @@ final class DashboardUpdate extends Command
                           responsive: true,
                           scales: {
                                 y: {
-                                    beginAtZero: true
-                                }
+                                    beginAtZero: true,
+                                    ticks: {
+                                       stepSize: 1
+                                    }
+                                },
                           }
                     }
               });
+              slot1.options.plugins.decimation.algorithm = 'min-max';
+              slot1.options.plugins.decimation.enabled = true;
+              slot1.options.plugins.decimation.samples = 500;
+              slot1.update()
               
               // slot 2, top right
               new Chart(containersRemaining, {
@@ -128,7 +135,7 @@ final class DashboardUpdate extends Command
               });
               
               // slot 3, bottom left
-              new Chart(sessionTotals, {
+              const slot3 = new Chart(sessionTotals, {
                     type: 'line',
                     data: {
                           labels: totalLabels,
@@ -138,11 +145,18 @@ final class DashboardUpdate extends Command
                           responsive: true,
                           scales: {
                                 y: {
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    ticks: {
+                                       stepSize: 1
+                                    }
                                 }
                           }
                     }
               });
+              slot3.options.plugins.decimation.algorithm = 'min-max';
+              slot3.options.plugins.decimation.enabled = true;
+              slot3.options.plugins.decimation.samples = 500;
+              slot3.update()
               
               // slot 4, bottom right
               new Chart(activeSessions, {
