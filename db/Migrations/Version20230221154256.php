@@ -16,8 +16,9 @@ final class Version20230221154256 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $table = $schema->getTable('sessions');
-        $table->addColumn('token', 'string', ['length' => 64]);
+        $this->addSql('
+            ALTER TABLE sessions ADD token VARCHAR(64) NULL;
+        ');
     }
 
     public function down(Schema $schema): void

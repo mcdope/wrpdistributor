@@ -141,6 +141,17 @@ class DockerManager
             throw new ContainerStartException('Can\'t login to containerHost! Configuration issue?');
         }
 
+        $authToken = $session->generateContainerAuthToken();
+        $session->authToken = $authToken;
+        $containerStartCommandWithToken = sprintf(
+            "docker run --rm --name %s -d -p %d:8080 %s -token %s",
+            "wrp_session_$session->id",
+            $session->port,
+            self::DOCKER_IMAGE,
+            $authToken
+        );
+
+        // @todo: replace with above
         $containerStartCommand = sprintf(
             "docker run --rm --name %s -d -p %d:8080 %s",
             "wrp_session_$session->id",

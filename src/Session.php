@@ -13,6 +13,8 @@ class Session
     public ?\DateTime $started = null;
     public ?\DateTime $lastUsed = null;
 
+    public ?string $authToken = null;
+
     private ServiceContainer $serviceContainer;
 
     private function __construct(
@@ -24,7 +26,8 @@ class Session
         ?string $containerHost = null,
         ?int $port = null,
         ?\DateTime $started = null,
-        ?\DateTime $lastUsed = null
+        ?\DateTime $lastUsed = null,
+        ?string $authToken = null
     ) {
         if (null === $started) {
             $this->started = new \DateTime();
@@ -39,6 +42,7 @@ class Session
         $this->containerHost = $containerHost;
         $this->port = $port;
         $this->lastUsed = $lastUsed;
+        $this->authToken = $authToken;
     }
 
     /**
@@ -55,14 +59,16 @@ class Session
                             wrpContainerId,
                             containerHost,
                             port,
-                            started
+                            started,
+                            token
                       ) VALUES (
                             :clientIp,
                             :clientUserAgent,
                             :wrpContainerId,
                             :containerHost,
                             :port,
-                            :started
+                            :started,
+                            :token
                       )";
 
             $parameters = [
@@ -72,6 +78,7 @@ class Session
                 'containerHost' => $this->containerHost,
                 'port' => $this->port,
                 'started' => $this->started?->format('c'),
+                'token' => $this->authToken,
             ];
         } else {
             $query = "UPDATE `sessions` SET
@@ -213,6 +220,7 @@ class Session
         );
     }
 
+    // @todo: replace with migration
     public static function createSessionTableIfNotExisting(ServiceContainer $serviceContainer): void
     {
         $tableExists = $serviceContainer->pdo->query(
@@ -235,5 +243,23 @@ class Session
     public function countAllSessions(): int
     {
         return $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function generateContainerAuthToken(): string
+    {
+        $tokenSourceString = sprintf(
+            '%s_%d_%d_%s_%s_%s',
+            (new \DateTime('now'))->format('c'),
+            time(),
+            $this->id,
+            $this->clientIp,
+            $this->clientUserAgent,
+            bin2hex(random_bytes(2048))
+        );
+
+        return sha1($tokenSourceString);
     }
 }

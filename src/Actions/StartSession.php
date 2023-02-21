@@ -28,9 +28,10 @@ readonly class StartSession implements ActionInterface
             http_response_code(202);
 
             echo sprintf(
-                '<xml><wrpUrl>%s:%d</wrpUrl></xml>',
+                '<xml><wrpUrl>%s:%d</wrpUrl><token>%s</token></xml>',
                 (string) $session->containerHost,
-                (int) $session->port
+                (int) $session->port,
+                $session->authToken
             );
 
             exit(0);
@@ -38,22 +39,15 @@ readonly class StartSession implements ActionInterface
             if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $containerStartException->getCode()) {
                 $session->upsert();
 
-                header('Content-Type: text/xml');
-                http_response_code(202);
+                http_response_code(204);
 
                 $this->serviceContainer->logger->debug(
-                    'Container already running, returning existing instance',
+                    'Container already running',
                     [
                         'containerHost' => $session->containerHost,
                         'containerId' => $session->wrpContainerId,
                         'port' => $session->port,
                     ]
-                );
-
-                echo sprintf(
-                    '<xml><wrpUrl>%s:%d</wrpUrl></xml>',
-                    (string) $session->containerHost,
-                    (int) $session->port
                 );
 
                 exit(0);

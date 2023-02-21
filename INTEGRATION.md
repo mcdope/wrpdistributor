@@ -9,6 +9,7 @@ All requests:
 - WILL RETURN 
 	- a statuscode of 200 in case of GET
 	- a statuscode of 202 for container start/stop actions (because of the delayed execution, exact delay between request and executions varies per config/install)
+        - a statuscode of 204 if you PUT a session that already has an container
 	- a statuscode of 204 for container lifetime extend requests
 	- a statuscode of 400 in case your request doesn't make sense (or some requirements failed, unlikely)
 	- a statuscode of 401 if your "Bearer" header was invalid
@@ -92,19 +93,20 @@ But definitely already implement this, cleanup will be implemented without prior
 Will check for next available free port and start a `wrp` container on it for the current session. The request will respond asap, but
 starting the actual container can take some time. Considering the speed of modern servers and retro computers, this will likely be 
 faster than your app reacting to the response. But no kind of "time for the container to be active" can be assumed! You MUST check 
-yourself if the instance is already available.
+yourself if the instance is already available. To control the WRP instance you MUST send the value of `token` in the `Bearer` header
+in each request to WRP, else it will return `401`.
 
 
 
 #### Response ####
-| Property      | Value                           |
-|---------------|---------------------------------|
-| Status        | 202 or 503, see above           |
-| Content-Type: | text/xml or text/html           |
-| Body:         | wrpInstanceUrl or error details |
+| Property      | Value                                     |
+|---------------|-------------------------------------------|
+| Status        | 202 or 503, see above                     |
+| Content-Type: | text/xml or text/html                     |
+| Body:         | wrpInstanceUrl and token or error details |
 
 ##### Body on 202 example ##### 
-`<xml><wrpUrl>somehost.tld:9999</wrpUrl></xml>`
+`<xml><wrpUrl>somehost.tld:9999</wrpUrl><token>stringYouMustSetInBearerHeaderOnRequestsToWRP</token></xml>`
 
 
 ### DELETE ###
