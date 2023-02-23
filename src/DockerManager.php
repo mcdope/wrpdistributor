@@ -143,20 +143,12 @@ class DockerManager
 
         $authToken = $session->generateContainerAuthToken();
         $session->authToken = $authToken;
-        $containerStartCommandWithToken = sprintf(
-            "docker run --rm --name %s -d -p %d:8080 %s -token %s",
+        $containerStartCommand = sprintf(
+            "docker run --rm --name %s -d -p %d:8080 %s -n -token %s",
             "wrp_session_$session->id",
             $session->port,
             self::DOCKER_IMAGE,
             $authToken
-        );
-
-        // @todo: replace with above
-        $containerStartCommand = sprintf(
-            "docker run --rm --name %s -d -p %d:8080 %s",
-            "wrp_session_$session->id",
-            $session->port,
-            self::DOCKER_IMAGE
         );
 
         if (!$ssh->exec(
