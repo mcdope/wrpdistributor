@@ -17,7 +17,15 @@ class DockerManager
     private const BALANCE_STRATEGY_FILLHOST = 'fillhost';
     public const EXCEPTION_ALREADY_HAS_CONTAINER = 128;
     public const EXCEPTION_HAS_NO_CONTAINER = 256;
-
+    private const WRP_LAUNCH_COMMAND = (
+        "docker run --rm -d " .
+        "--mount type=bind,source=%s,target=/cert.crt " .
+        "--mount type=bind,source=%s,target=/private.key " .
+        "--name %s " .
+        "-p %d:%d " .
+        "%s -O -n " .
+        "-token %s"
+    );
 
     /**
      * @throws HostConfigurationMismatchException
@@ -27,8 +35,14 @@ class DockerManager
         private array                     $containerHosts = [],
         private array                     $privateKeys = [],
         private array                     $maxContainers = [],
+        private array                     $tlsCertificates = [],
     ) {
-        [$this->containerHosts, $this->privateKeys, $this->maxContainers] = $this->readConfiguredHosts();
+        [
+            $this->containerHosts,
+            $this->privateKeys,
+            $this->maxContainers,
+            $this->tlsCertificates
+        ] = $this->readConfiguredHosts();
     }
 
     public function countAvailableContainerHosts(): int
@@ -80,7 +94,7 @@ class DockerManager
      * @throws ContainerStartException
      * @throws \RuntimeException
      */
-    public function startContainer(Session $session): void
+    public function startContainer(Session $session, bool $useTLS = false): void
     {
         if (null === $session->id) {
             throw new ContainerStartException('Session not persisted yet!');
@@ -125,6 +139,7 @@ class DockerManager
 
         $session->containerHost = $determinedContainerHost['host'];
         [$userName, $privateKey] = $determinedContainerHost['privateKey'];
+        [$tlsCert, $tlsPrivateKey] = $determinedContainerHost['cert'];
 
         if (isset($determinedContainerHost['privateKey'][2])) {
             $key = PublicKeyLoader::load(
@@ -143,12 +158,27 @@ class DockerManager
 
         $authToken = $session->generateContainerAuthToken();
         $session->authToken = $authToken;
+        $wrpPortForBind = $useTLS ? 8081 : 8080;
         $containerStartCommand = sprintf(
-            "docker run --rm --name %s -d -p %d:8080 %s -n -token %s",
+            self::WRP_LAUNCH_COMMAND,
+            $tlsCert,
+            $tlsPrivateKey,
             "wrp_session_$session->id",
             $session->port,
+            $wrpPortForBind,
             self::DOCKER_IMAGE,
             $authToken
+        );
+
+        $this->serviceContainer->logger->debug(
+            'Container start command generated',
+            [
+                'command' => $containerStartCommand,
+                'sessionId' => $session->id,
+                'port' => $session->port,
+                'containerHost' => $session->containerHost,
+                'useTLS' => (int) $useTLS,
+            ]
         );
 
         if (!$ssh->exec(
@@ -330,6 +360,7 @@ class DockerManager
             'host' => $this->containerHosts[$randomHostIndex],
             'privateKey' => $this->privateKeys[$randomHostIndex],
             'maxContainers' => $this->maxContainers[$randomHostIndex],
+            'cert' => $this->tlsCertificates[$randomHostIndex],
         ];
     }
 
@@ -433,6 +464,11 @@ class DockerManager
             $containerHostKeys[$key] = explode('~', $containerHostKey);
         }
 
+        $containerCerts = explode(',', $_ENV['CONTAINER_HOSTS_TLS_CERTS']);
+        foreach ($containerCerts as $key => $containerCert) {
+            $containerCerts[$key] = explode('~', $containerCert);
+        }
+
         if (\count($containerHosts) !== \count($containerHostKeys)) {
             $this->serviceContainer->logger->error(
                 'Count of privateKeys does not match count of containerHosts!',
@@ -460,7 +496,8 @@ class DockerManager
         return [
             $containerHosts,
             $containerHostKeys,
-            $maxContainers
+            $maxContainers,
+            $containerCerts,
         ];
     }
 
@@ -516,6 +553,7 @@ class DockerManager
                 'host' => $this->containerHosts[$indexOfFirstUnusedContainerHost],
                 'privateKey' => $this->privateKeys[$indexOfFirstUnusedContainerHost],
                 'maxContainers' => $this->maxContainers[$indexOfFirstUnusedContainerHost],
+                'cert' => $this->tlsCertificates[$indexOfFirstUnusedContainerHost],
             ];
         }
 
@@ -556,6 +594,7 @@ class DockerManager
                     'host' => $this->containerHosts[$indexOfSelectedHost],
                     'privateKey' => $this->privateKeys[$indexOfSelectedHost],
                     'maxContainers' => $this->maxContainers[$indexOfSelectedHost],
+                    'cert' => $this->tlsCertificates[$indexOfSelectedHost],
                 ];
             }
 
@@ -597,6 +636,7 @@ class DockerManager
                     'host' => $this->containerHosts[$indexOfSelectedHost],
                     'privateKey' => $this->privateKeys[$indexOfSelectedHost],
                     'maxContainers' => $this->maxContainers[$indexOfSelectedHost],
+                    'cert' => $this->tlsCertificates[$indexOfSelectedHost],
                 ];
             }
         }
@@ -639,6 +679,7 @@ class DockerManager
                 'host' => $this->containerHosts[$indexOfFirstUnusedContainerHost],
                 'privateKey' => $this->privateKeys[$indexOfFirstUnusedContainerHost],
                 'maxContainers' => $this->maxContainers[$indexOfFirstUnusedContainerHost],
+                'cert' => $this->tlsCertificates[$indexOfFirstUnusedContainerHost],
             ];
         }
 
