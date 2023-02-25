@@ -1,0 +1,4 @@
+PUT http://{{host}}/
+Bearer: {{bearer}}
+
+ssl=true

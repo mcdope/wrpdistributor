@@ -20,7 +20,8 @@ readonly class StartSession implements ActionInterface
      */
     public function __invoke(Session $session): void
     {
-        $clientWantsTLS = isset($_REQUEST['ssl']) && (bool)$_REQUEST['ssl'];
+        parse_str(file_get_contents("php://input"), $input);
+        $clientWantsTLS = isset($input['ssl']) && (bool)$input['ssl'];
 
         try {
             $this->serviceContainer->dockerManager->startContainer($session, $clientWantsTLS);
