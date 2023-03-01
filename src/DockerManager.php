@@ -22,6 +22,7 @@ class DockerManager
         "--mount type=bind,source=%s,target=/cert.crt " .
         "--mount type=bind,source=%s,target=/private.key " .
         "--name %s " .
+        "-log /dev/null" .
         "-p %d:%d " .
         "%s -O -n " .
         "-token %s"
