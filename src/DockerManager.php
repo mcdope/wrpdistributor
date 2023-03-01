@@ -124,7 +124,6 @@ class DockerManager
             'startContainer() determined new containerHost',
             [
                 'host' => $determinedContainerHost['host'],
-                'auth' => $determinedContainerHost['privateKey'],
                 'maxContainers' => $determinedContainerHost['maxContainers'],
             ]
         );
@@ -470,13 +469,7 @@ class DockerManager
         }
 
         if (\count($containerHosts) !== \count($containerHostKeys)) {
-            $this->serviceContainer->logger->error(
-                'Count of privateKeys does not match count of containerHosts!',
-                [
-                    'containerHosts' => $containerHosts,
-                    'privateKeys' => $containerHostKeys,
-                ]
-            );
+            $this->serviceContainer->logger->error('Count of privateKeys does not match count of containerHosts!');
 
             throw new HostConfigurationMismatchException('Count of privateKeys does not match count of containerHosts!');
         }

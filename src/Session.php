@@ -99,14 +99,7 @@ class Session
 
         $upsertStatement = $this->serviceContainer->pdo->prepare($query);
         if (!$upsertStatement->execute($parameters)) {
-            $this->serviceContainer->logger->error(
-                'Session upsert failed',
-                [
-                    'query' => $upsertStatement->queryString,
-                    'parameters' => $parameters,
-                    'errorInfo' => $this->serviceContainer->pdo->errorInfo(),
-                ]
-            );
+            $this->serviceContainer->logger->error('Session upsert failed');
 
             throw new \RuntimeException(
                 'Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode()
