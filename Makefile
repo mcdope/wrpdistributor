@@ -85,6 +85,7 @@ containers_log_collect:
 
 migrate_database:
 	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
+
 help:
 	@echo ""
 	@echo "${NOCOLOR}Usage: ${CYAN}make [TARGET] [EXTRA_ARGUMENTS]"
@@ -101,6 +102,7 @@ help:
 	@echo "  ${BGREEN}bash_nginx${YELLOW}                   Open bash in nginx container"
 	@echo "  ${BGREEN}bash_mysql${YELLOW}                   Open bash in mysql container"
 	@echo "  ${BGREEN}restart${YELLOW}                      Restart the containers"
+	@echo "  ${BGREEN}migrate_database${YELLOW}             Run database migrations"
 	@echo "  ${BGREEN}cleanup_sessions${YELLOW}             Run session cleanup"
 	@echo "  ${BGREEN}statistics_collect${YELLOW}           Collect statistics for the dashboard at this point in time"
 	@echo "  ${BGREEN}statistics_dashboard_update${YELLOW}  Generate dashboard.html from statistics table"

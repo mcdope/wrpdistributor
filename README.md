@@ -1,7 +1,7 @@
 ### What the heck is this? ### 
 
-WrpDistributor is a small application to allow https://github.com/tenox7/wrp to be used by multiple clients via `AmiFox`,
-or any application implementing it (looking at you, Atari crowd 👏)
+WrpDistributor is a small application to allow https://github.com/alb42/wrp to be used by multiple clients via 
+a client application like [AmiFox](https://blog.alb42.de/2023/02/12/browsing-the-web-amifox/).
 
 ### License ###
 
@@ -22,6 +22,7 @@ Download the repository, open a shell and change to the repository. Now...
        - `MAX_CONTAINERS_RUNNING`
        - `CONTAINER_HOSTS`
        - `CONTAINER_HOSTS_KEYS`
+       - `CONTAINER_HOSTS_TLS_CERTS`
        - `AUTH_TOKEN`
        - ... and maybe `START_PORT` and `CONTAINER_DISTRIBUTION_METHOD`
 - run `make build` to create the docker container
@@ -29,7 +30,7 @@ Download the repository, open a shell and change to the repository. Now...
 - actually set up at least one containerHost
     - configure the server of your choice (as long as it's Linux 😅) with Docker
     - add a user dedicated to run the containers, add it to the group `docker` to allow it to manage containers
-        - IMPORTANT: this allows this user to manage ALL containers on that host, so you most likely want to put this in a VM itself, lock this user down further and allow logins only from your expected ingress IP. It could very well happen that this software has a catastrophic bug exposing the SSH keys, even if unlikely. This software is NOT INTENDED FOR ENDUSERS and requires profound knowledge to operate it in a secure manner. I won't go into detail of this, because if I need to you're not the target group to be honest.
+        - IMPORTANT: this allows this user to manage ALL containers on that host, so you most likely want to put this in a VM itself, lock this user down further and allow logins only from your expected ingress IP.
     - create an SSH keypair to allow `wrp-distributor` to access the host(s). If you configure multiple hosts, you should use a dedicated keypair for each of them. Then install this key with `ssh-copy-id` to the user account of the host
     - make sure you can ssh with that key into the host
     - make sure you can run docker with that user on that host (i.e. run the helloworld container)
@@ -39,9 +40,10 @@ Download the repository, open a shell and change to the repository. Now...
        - adjust `MAX_CONTAINERS_RUNNING`
        - add authentication data to `CONTAINER_HOSTS_KEYS`
            - format is `userName~filenameOfPrivateKey`
-               - if your key is password protected, it would be `userName~filenameOfPrivateKey~keyPassword`  
-- Repeat the previous step for as many hosts as you want, the architecture of this distributor can easily handle more requests than you can provide hosts to run on. Except you're some cloud provider
-- `.env` vars `MAX_CONTAINERS_RUNNING`, `CONTAINER_HOSTS` and `CONTAINER_HOSTS_KEYS` must always contain the same number of elements
+               - if your key is password protected, it would be `userName~filenameOfPrivateKey~keyPassword`
+       - add TLS certificate and private key to `CONTAINER_HOSTS_TLS_CERTS`
+- Repeat the previous step for as many hosts as you want
+- container related `.env` vars like `MAX_CONTAINERS_RUNNING` must always contain the same number of elements (you will get an exception else)
 - Set `CONTAINER_DISTRIBUTION_METHOD` to control the load balancing. The first host used will always be random. Available values:
     - `equal` - will distribute containers equally over all hosts. To use this all hosts should have the same value set in `MAX_CONTAINERS_RUNNING`, everything else is untested
         - if all hosts currently run the same number of containers, the next one will be chosen randomly
@@ -57,7 +59,7 @@ You will need MySQL 8, PHP8.2 and composer on your server to run this.
 - run `cp .env.dist .env`
 - run `composer install` to install the dependencies
 - create a database and database user for `wrp-distributor` and adjust `.env` accordingly
-    - required tables will be auto-created if missing, don't worry about it. But if you insist on it, run [sessions.sql](db/sessions.sql) on it
+    - required tables will be auto-created if missing, don't worry about it
 - adjust remaining parameters in `.env` according to your needs
 - continue with "actually set up at least one containerHost" from [The easy way](README.md#the-easy-way-)
 
@@ -77,7 +79,7 @@ See [INTEGRATION.md](INTEGRATION.md)
 
 #### Huh? I don't get it... ####
 
-Then this software isn't for you. You're most likely looking for https://github.com/tenox7/wrp instead.
+Then this software isn't for you. You're most likely looking for https://github.com/alb42/wrp instead.
 
 ### How do I...? ###
 
@@ -92,7 +94,7 @@ Points you should look into:
 
 ### TODO ###
 - add purpose-bound Exception classes (in progress)
-- introduce service for config/env handling (not needed I think)
+- document config format
 - strip down php container, guess we don't need most extensions
 - no such container on shutdown shouldn't be treated as an error
 - move docker image name to env var

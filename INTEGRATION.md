@@ -35,6 +35,8 @@ Yes, this is annoying, but that's the price to avoid logins and keep the codebas
 Also: in case you modify `wrp-distributor` for your project make sure to adhere to the license - you MUST publish your modified sources even
 if you don't distribute them and use them only to provide a service. See LICENSE and README.md for details.
 
+## Examples of integrating applications ##
+- [AmiFox](https://blog.alb42.de/2023/02/12/browsing-the-web-amifox/) 
 
 ## API usage ##
 
@@ -69,17 +71,11 @@ Prints a plain html status dashboard of the current instance. It shows the curre
 ### HEAD ### 
 
 Simply upserts the session, which causes the lastUsed timestamp to be set to the current date and time. This prevents this session from
-being garbage collected / shutdown. 
+being garbage collected / shutdown. Such a request should be sent at least once every 4 minutes.
 
 Recommendations: Monitor user activity,
 as long as the user continues scrolling the content or is filling some form issue periodically a 
 HEAD request to make sure the session doesn't get killed while the user is doing "work".
-
-Important note: 
-Currently there is no "cleanup" implemented, 
-so the exact interval you should issue such a request is not yet determined.
-For now, you can plan with like "every 5-minutes unused sessions will be shutdown". I will not be shorter than that, but maybe it will be longer than that.
-But definitely already implement this, cleanup will be implemented without prior notice!
 
 #### Response ####
 | Property      | Value |
@@ -95,6 +91,8 @@ starting the actual container can take some time. Considering the speed of moder
 faster than your app reacting to the response. But no kind of "time for the container to be active" can be assumed! You MUST check 
 yourself if the instance is already available. To control the WRP instance you MUST send the value of `token` in the `Bearer` header
 in each request to WRP, else it will return `401`.
+
+You can include `ssl=true` in your request body to get a TLS secured `wrp`. The default is to not use TLS.
 
 
 
