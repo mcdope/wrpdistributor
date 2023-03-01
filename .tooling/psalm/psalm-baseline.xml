@@ -1,71 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.6.0@e784128902dfe01d489c4123d69918a9f3c1eac5">
+<files psalm-version="5.7.7@e028ba46ba0d7f9a78bc3201c251e137383e145f">
   <file src="index.php">
     <PossiblyUndefinedArrayOffset>
-      <code>$_SERVER['HTTP_USER_AGENT']</code>
-      <code>$_SERVER['REMOTE_ADDR']</code>
-      <code>$_SERVER['REQUEST_METHOD']</code>
+      <code><![CDATA[$_SERVER['HTTP_USER_AGENT']]]></code>
+      <code><![CDATA[$_SERVER['REMOTE_ADDR']]]></code>
+      <code><![CDATA[$_SERVER['REQUEST_METHOD']]]></code>
     </PossiblyUndefinedArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
-      <code>$_ENV['AUTH_TOKEN']</code>
-      <code>$_ENV['SESSION_DATABASE_DSN']</code>
-      <code>$_ENV['SESSION_DATABASE_PASS']</code>
-      <code>$_ENV['SESSION_DATABASE_USER']</code>
+      <code><![CDATA[$_ENV['AUTH_TOKEN']]]></code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_DSN']]]></code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_PASS']]]></code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_USER']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
   <file src="src/Commands/Command.php">
     <PossiblyUndefinedStringArrayOffset>
-      <code>$_ENV['SESSION_DATABASE_DSN']</code>
-      <code>$_ENV['SESSION_DATABASE_PASS']</code>
-      <code>$_ENV['SESSION_DATABASE_USER']</code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_DSN']]]></code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_PASS']]]></code>
+      <code><![CDATA[$_ENV['SESSION_DATABASE_USER']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
   <file src="src/DockerManager.php">
     <PossiblyUndefinedArrayOffset>
-      <code>$determinedContainerHost['host']</code>
+      <code><![CDATA[$determinedContainerHost['host']]]></code>
     </PossiblyUndefinedArrayOffset>
     <PossiblyUndefinedIntArrayOffset>
-      <code>$this-&gt;containerHosts[$hostIndex]</code>
-      <code>$this-&gt;containerHosts[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfSelectedHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfSelectedHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfSelectedHost]</code>
-      <code>$this-&gt;containerHosts[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[
-            array_search($containerHost, $this-&gt;containerHosts, true)
-        ]</code>
-      <code>$this-&gt;maxContainers[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;maxContainers[$indexOfSelectedHost]</code>
-      <code>$this-&gt;privateKeys[$hostIndex]</code>
-      <code>$this-&gt;privateKeys[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;privateKeys[$indexOfFirstUnusedContainerHost]</code>
-      <code>$this-&gt;privateKeys[$indexOfSelectedHost]</code>
-      <code>$this-&gt;privateKeys[$indexOfSelectedHost]</code>
+      <code><![CDATA[$this->containerHosts[$hostIndex]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[
+            array_search($containerHost, $this->containerHosts, true)
+        ]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->privateKeys[$hostIndex]]]></code>
+      <code><![CDATA[$this->privateKeys[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->privateKeys[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
     </PossiblyUndefinedIntArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
-      <code>$_ENV['CONTAINER_HOSTS']</code>
-      <code>$_ENV['CONTAINER_HOSTS_KEYS']</code>
-      <code>$_ENV['MAX_CONTAINERS_RUNNING']</code>
-      <code>$_ENV['START_PORT']</code>
-      <code>$_ENV['START_PORT']</code>
-      <code>$determinedContainerHost['host']</code>
-      <code>$determinedContainerHost['host']</code>
-      <code>$determinedContainerHost['host']</code>
-      <code>$determinedContainerHost['maxContainers']</code>
-      <code>$determinedContainerHost['privateKey']</code>
-      <code>$determinedContainerHost['privateKey']</code>
+      <code><![CDATA[$_ENV['CONTAINER_HOSTS']]]></code>
+      <code><![CDATA[$_ENV['CONTAINER_HOSTS_KEYS']]]></code>
+      <code><![CDATA[$_ENV['MAX_CONTAINERS_RUNNING']]]></code>
+      <code><![CDATA[$_ENV['START_PORT']]]></code>
+      <code><![CDATA[$_ENV['START_PORT']]]></code>
+      <code><![CDATA[$determinedContainerHost['host']]]></code>
+      <code><![CDATA[$determinedContainerHost['host']]]></code>
+      <code><![CDATA[$determinedContainerHost['host']]]></code>
+      <code><![CDATA[$determinedContainerHost['maxContainers']]]></code>
+      <code><![CDATA[$determinedContainerHost['privateKey']]]></code>
+      <code><![CDATA[$determinedContainerHost['privateKey']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
 </files>

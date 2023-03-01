@@ -242,7 +242,7 @@ class Session
             '%s_%d_%d_%s_%s_%s',
             (new \DateTime('now'))->format('c'),
             time(),
-            $this->id,
+            (int) $this->id,
             $this->clientIp,
             $this->clientUserAgent,
             bin2hex(random_bytes(2048))

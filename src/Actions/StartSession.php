@@ -34,7 +34,7 @@ readonly class StartSession implements ActionInterface
                 '<xml><wrpUrl>%s:%d</wrpUrl><token>%s</token></xml>',
                 (string) $session->containerHost,
                 (int) $session->port,
-                $session->authToken
+                (string) $session->authToken
             );
 
             exit(0);

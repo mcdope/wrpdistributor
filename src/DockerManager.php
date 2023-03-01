@@ -93,6 +93,7 @@ class DockerManager
     /**
      * @throws ContainerStartException
      * @throws \RuntimeException
+     * @throws \Exception
      */
     public function startContainer(Session $session, bool $useTLS = false): void
     {

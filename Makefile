@@ -53,12 +53,14 @@ composer_require:
 psalm:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
+update_psalm_baseline:
+	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml --update-baseline
+
 phpcs:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
 phpcs-fix:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer fix src/ index.php bin/console
-
 
 bash_php:
 	docker-compose exec php_$(PROJECT_NAME) bash
@@ -98,6 +100,8 @@ help:
 	@echo "  ${BGREEN}destroy${YELLOW}                      Destroy the containers"
 	@echo "  ${BGREEN}composer${YELLOW}                     Run composer install"
 	@echo "  ${BGREEN}composer_require${YELLOW}             Run composer require [PACKAGE]"
+	@echo "  ${BGREEN}phpcs${YELLOW}                        Run phpcs"
+	@echo "  ${BGREEN}psalm${YELLOW}                        Run psalm"
 	@echo "  ${BGREEN}bash_php${YELLOW}                     Open bash in php container"
 	@echo "  ${BGREEN}bash_nginx${YELLOW}                   Open bash in nginx container"
 	@echo "  ${BGREEN}bash_mysql${YELLOW}                   Open bash in mysql container"
