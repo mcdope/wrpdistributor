@@ -27,7 +27,6 @@ class Session
         ?int $port = null,
         ?\DateTime $started = null,
         ?\DateTime $lastUsed = null,
-        ?string $authToken = null
     ) {
         if (null === $started) {
             $this->started = new \DateTime();
@@ -42,7 +41,6 @@ class Session
         $this->containerHost = $containerHost;
         $this->port = $port;
         $this->lastUsed = $lastUsed;
-        $this->authToken = $authToken;
     }
 
     /**
@@ -59,16 +57,14 @@ class Session
                             wrpContainerId,
                             containerHost,
                             port,
-                            started,
-                            token
+                            started
                       ) VALUES (
                             :clientIp,
                             :clientUserAgent,
                             :wrpContainerId,
                             :containerHost,
                             :port,
-                            :started,
-                            :token
+                            :started
                       )";
 
             $parameters = [
@@ -78,7 +74,6 @@ class Session
                 'containerHost' => $this->containerHost,
                 'port' => $this->port,
                 'started' => $this->started?->format('c'),
-                'token' => $this->authToken,
             ];
         } else {
             $query = "UPDATE `sessions` SET
