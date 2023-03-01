@@ -100,3 +100,4 @@ Points you should look into:
 - move docker image name to env var
 - make servicecontainer selfcontained (instantiate everything in constructor)
 - put cronjobs into docker container
+- migrations should use host PDO DSN
