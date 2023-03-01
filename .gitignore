@@ -2,6 +2,7 @@
 ssh/*
 .env
 .env.*
+manualRequestsForTesting/http-client.env.json
 
 # Application data
 logs/*
