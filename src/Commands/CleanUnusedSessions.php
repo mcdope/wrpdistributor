@@ -60,8 +60,6 @@ final class CleanUnusedSessions extends Command
         $timeout = (int) $input->getArgument('timeout');
         $unusedSessions = $this->getUnusedSessions($timeout);
         if (false === $unusedSessions || 0 === count($unusedSessions)) {
-            $this->nothingToCleanup($output);
-
             return self::SUCCESS;
         }
 
@@ -122,11 +120,5 @@ final class CleanUnusedSessions extends Command
         );
 
         return self::SUCCESS;
-    }
-
-    private function nothingToCleanup(OutputInterface $output): void
-    {
-        $output->writeln('INFO: No sessions found to terminate.');
-        $this->serviceContainer->logger->info('INFO: No sessions found to terminate.');
     }
 }

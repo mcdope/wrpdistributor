@@ -22,7 +22,7 @@ readonly class ExtendSession implements ActionInterface
         } catch (\Throwable $throwable) {
             http_response_code(503);
 
-            $this->serviceContainer->logger->debug(
+            $this->serviceContainer->logger->warning(
                 sprintf('Throwable occurred in %s', self::class),
                 [
                     'message' => $throwable->getMessage(),

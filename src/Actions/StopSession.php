@@ -21,15 +21,13 @@ readonly class StopSession implements ActionInterface
             http_response_code(202);
         } catch (\LogicException $logicException) {
             if (DockerManager::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
-                $this->serviceContainer->logger->debug('Container stop requested, but there is none to stop');
-
                 http_response_code(204);
                 exit(0);
             }
         } catch (\Throwable $throwable) {
             http_response_code(503);
 
-            $this->serviceContainer->logger->debug(
+            $this->serviceContainer->logger->warning(
                 sprintf('Throwable occurred in %s', self::class),
                 [
                     'message' => $throwable->getMessage(),

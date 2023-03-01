@@ -99,13 +99,6 @@ if (!array_key_exists($_SERVER['REQUEST_METHOD'], $actionMap)) {
 
 try {
     $actionMap[$_SERVER['REQUEST_METHOD']]($session);
-    $logger->debug(
-        'Successfully handled request',
-        [
-            'responseCode' => http_response_code(),
-            'action' => $actionMap[$_SERVER['REQUEST_METHOD']]::class,
-        ]
-    );
 
     exit(0);
 } catch (\LogicException $logicException) {

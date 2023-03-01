@@ -43,16 +43,6 @@ readonly class StartSession implements ActionInterface
                 $session->upsert();
 
                 http_response_code(204);
-
-                $this->serviceContainer->logger->debug(
-                    'Container already running',
-                    [
-                        'containerHost' => $session->containerHost,
-                        'containerId' => $session->wrpContainerId,
-                        'port' => $session->port,
-                    ]
-                );
-
                 exit(0);
             }
 
@@ -68,7 +58,7 @@ readonly class StartSession implements ActionInterface
         } catch (\Throwable $throwable) {
             http_response_code(503);
 
-            $this->serviceContainer->logger->debug(
+            $this->serviceContainer->logger->warning(
                 sprintf('Unexpected throwable occurred in %s', self::class),
                 [
                     'message' => $throwable->getMessage(),

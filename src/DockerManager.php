@@ -121,11 +121,10 @@ class DockerManager
             );
         }
 
-        $this->serviceContainer->logger->debug(
+        $this->serviceContainer->logger->info(
             'startContainer() determined new containerHost',
             [
-                'host' => $determinedContainerHost['host'],
-                'maxContainers' => $determinedContainerHost['maxContainers'],
+                'host' => $determinedContainerHost['host']
             ]
         );
 
@@ -378,7 +377,7 @@ class DockerManager
         }
 
         if (0 === \count($sessionCountByContainerHost)) {
-            $this->serviceContainer->logger->debug('Load balancing can\'t balance anything, no containers running yet. Passing to getRandomHost().');
+            $this->serviceContainer->logger->info('Load balancing can\'t balance anything, no containers running yet. Passing to getRandomHost().');
 
             return $this->getRandomHost();
         }
@@ -417,13 +416,6 @@ class DockerManager
 
         if ($result = $this->serviceContainer->pdo->query($query)->fetch()) {
             if (empty($result['nextPort'])) {
-                $this->serviceContainer->logger->debug(
-                    'findUnusedPort() falling back to START_PORT because of empty result',
-                    [
-                        'nextPort' => (int) $_ENV['START_PORT'],
-                    ]
-                );
-
                 return (int) $_ENV['START_PORT'];
             }
 
@@ -431,22 +423,8 @@ class DockerManager
                 throw new \RuntimeException('No free ports left!');
             }
 
-            $this->serviceContainer->logger->debug(
-                'findUnusedPort() determined next port to use',
-                [
-                    'nextPort' => (int) $result['nextPort'],
-                ]
-            );
-
             return (int) $result['nextPort'];
         }
-
-        $this->serviceContainer->logger->debug(
-            'findUnusedPort() falling back to START_PORT at end of method',
-            [
-                'nextPort' => (int) $_ENV['START_PORT'],
-            ]
-        );
 
         return (int) $_ENV['START_PORT'];
     }
@@ -516,14 +494,6 @@ class DockerManager
                 array_keys($sessionCountByContainerHost)
             );
 
-            $this->serviceContainer->logger->debug(
-                'Unused container hosts',
-                [
-                    'unusedHosts' => $unusedContainerHosts,
-                    'usedHosts' => array_keys($sessionCountByContainerHost),
-                ]
-            );
-
             $keyOfFirstUnusedHost = array_key_first($unusedContainerHosts);
             if (null === $keyOfFirstUnusedHost) {
                 throw new LoadBalancingFailedException('Couldn\t find $unusedContainerHosts key for first unused host!');
@@ -533,14 +503,6 @@ class DockerManager
                 $unusedContainerHosts[$keyOfFirstUnusedHost],
                 $this->containerHosts,
                 true
-            );
-
-            $this->serviceContainer->logger->debug(
-                'Equal load balancing selected new unused containerHost',
-                [
-                    'nextContainerHostByStrategy' => $this->containerHosts[$indexOfFirstUnusedContainerHost],
-                    'maxContainersForHost' => $this->maxContainers[$indexOfFirstUnusedContainerHost],
-                ]
             );
 
             return [
@@ -553,7 +515,7 @@ class DockerManager
 
         $hasAlreadyReachedEqualDistribution = \count(array_unique($sessionCountByContainerHost)) === 1;
         if ($hasAlreadyReachedEqualDistribution) {
-            $this->serviceContainer->logger->debug('Load balancing can\'t balance anything, all hosts run the same amount of containers. Passing to getRandomHost().');
+            $this->serviceContainer->logger->info('Load balancing can\'t balance anything, all hosts run the same amount of containers. Passing to getRandomHost().');
 
             return $this->getRandomHost();
         }
@@ -575,15 +537,6 @@ class DockerManager
             }
 
             if ($sessionCount < $previousSessionCount) {
-                $this->serviceContainer->logger->debug(
-                    'Equal load balancing selected new containerHost',
-                    [
-                        'nextContainerHostByStrategy' => $this->containerHosts[$indexOfSelectedHost],
-                        'currentSessionsOnHost' => $sessionCount,
-                        'maxContainersForHost' => $this->maxContainers[$indexOfSelectedHost],
-                    ]
-                );
-
                 return [
                     'host' => $this->containerHosts[$indexOfSelectedHost],
                     'privateKey' => $this->privateKeys[$indexOfSelectedHost],
@@ -617,15 +570,6 @@ class DockerManager
             $indexOfSelectedHost = array_search($containerHost, $this->containerHosts, true);
 
             if ($sessionCount < $this->maxContainers[$indexOfSelectedHost]) {
-                $this->serviceContainer->logger->debug(
-                    'Fillhost load balancing selected free containerHost',
-                    [
-                        'nextContainerHostByStrategy' => $containerHost,
-                        'currentSessionsOnHost' => $sessionCount,
-                        'maxContainersForHost' => $this->maxContainers[$indexOfSelectedHost],
-                    ]
-                );
-
                 return [
                     'host' => $this->containerHosts[$indexOfSelectedHost],
                     'privateKey' => $this->privateKeys[$indexOfSelectedHost],
@@ -642,14 +586,6 @@ class DockerManager
                 array_keys($sessionCountByContainerHost)
             );
 
-            $this->serviceContainer->logger->debug(
-                'Unused container hosts',
-                [
-                    'unusedHosts' => $unusedContainerHosts,
-                    'usedHosts' => array_keys($sessionCountByContainerHost),
-                ]
-            );
-
             $keyOfFirstUnusedHost = array_key_first($unusedContainerHosts);
             if (null === $keyOfFirstUnusedHost) {
                 throw new LoadBalancingFailedException('Couldn\t find $unusedContainerHosts key for first unused host!');
@@ -659,14 +595,6 @@ class DockerManager
                 $unusedContainerHosts[$keyOfFirstUnusedHost],
                 $this->containerHosts,
                 true
-            );
-
-            $this->serviceContainer->logger->debug(
-                'Fillhost load balancing selected new unused containerHost',
-                [
-                    'nextContainerHostByStrategy' => $this->containerHosts[$indexOfFirstUnusedContainerHost],
-                    'maxContainersForHost' => $this->maxContainers[$indexOfFirstUnusedContainerHost],
-                ]
             );
 
             return [

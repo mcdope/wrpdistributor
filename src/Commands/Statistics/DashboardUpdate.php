@@ -328,7 +328,7 @@ TPL;
             file_put_contents('dashboard.html', $htmlOutput);
             return self::SUCCESS;
         } catch (\Throwable $throwable) {
-            $this->serviceContainer->logger->debug(
+            $this->serviceContainer->logger->warning(
                 sprintf('Throwable occurred in %s', self::class),
                 [
                     'message' => $throwable->getMessage(),
