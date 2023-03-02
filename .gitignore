@@ -19,5 +19,6 @@ vendor/
 .DS_Store
 thumbs.db
 .tooling/phpcs/.phpcs_cache
+.tooling/phpunit
 *.png
 site.webmanifest

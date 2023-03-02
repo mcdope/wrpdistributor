@@ -11,7 +11,8 @@ RUN apt-get -y --no-install-recommends install build-essential curl git openssh-
 # Install xdebug
 RUN pecl install xdebug && \
     docker-php-ext-enable xdebug && \
-    mkdir /var/log/xdebug
+    mkdir /var/log/xdebug && \
+    echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 RUN docker-php-ext-install pdo_mysql
 RUN docker-php-ext-install sodium
