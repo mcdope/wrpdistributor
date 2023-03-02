@@ -88,6 +88,9 @@ containers_log_collect:
 migrate_database:
 	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
+phpunit:
+	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+
 help:
 	@echo ""
 	@echo "${NOCOLOR}Usage: ${CYAN}make [TARGET] [EXTRA_ARGUMENTS]"
