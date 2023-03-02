@@ -25,6 +25,11 @@
             "AmiDev\\WrpDistributor\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "McDope",
