@@ -7,15 +7,16 @@ namespace AmiDev\WrpDistributor;
 use Monolog\ErrorHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger as MonologLogger;
+use Psr\Log\LoggerInterface;
 
 class Logger
 {
-    private MonologLogger $logger;
+    private LoggerInterface $logger;
 
-    public function __construct()
+    public function __construct(?LoggerInterface $logger = null)
     {
         self::createLogDirectoryIfNotExists();
-        $log = new MonologLogger('distributor');
+        $log = $logger ?? new MonologLogger('distributor');
         ErrorHandler::register($log);
         $log->pushHandler(new RotatingFileHandler('logs/distributor.log', 30));
 
