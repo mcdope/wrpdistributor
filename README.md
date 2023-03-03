@@ -103,3 +103,4 @@ Points you should look into:
 - migrations should use host PDO DSN
 - extract loadbalancing into own service / strategy classes
 - table creation should happen via migrations
+- "fix" findUnusedPort
