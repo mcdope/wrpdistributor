@@ -7,11 +7,6 @@ use Monolog\Handler\RotatingFileHandler;
 use Psr\Log\LoggerInterface;
 
 final class LoggerTest extends BaseTestCase {
-    public function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
     public function testInfoLogsLikeExpected(): void
     {
         $monolog = $this->createMock(\Monolog\Logger::class);
