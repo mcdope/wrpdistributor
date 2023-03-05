@@ -26,6 +26,14 @@ final class DashboardUpdate extends Command
                 border: none;
             }
             
+            tr {
+                height: 49%;
+            }
+            
+            tr > td:first-of-type {
+                width: 80%;
+            }
+            
             td {
                 vertical-align: top;
             }
@@ -33,6 +41,10 @@ final class DashboardUpdate extends Command
             td > div {
                 vertical-align: center;
                 text-align: center;
+            }
+            
+            .canvas-wide {
+                width: 65%!important;
             }
         </style>
   </head>
@@ -42,7 +54,7 @@ final class DashboardUpdate extends Command
                 <td>
                     <div id="containersPerHostContainer" class="chart">
                         <h3>Containers per Host</h3>
-                        <canvas id="containersPerHostCanvas"></canvas>
+                        <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
                     </div>
                 </td>
                 <td>
@@ -56,7 +68,7 @@ final class DashboardUpdate extends Command
                 <td>
                     <div id="sessionTotalsContainer" class="chart">
                         <h3>Sessions &amp; containers total</h3>
-                        <canvas id="sessionTotalsCanvas"></canvas>
+                        <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
                     </div>
                 </td>
                 <td>
@@ -90,7 +102,8 @@ final class DashboardUpdate extends Command
                           datasets: containersPerHostDatasets
                     },
                     options: {
-                          responsive: true,
+                          responsive: false,
+                          maintainAspectRatio: false,
                           scales: {
                                 y: {
                                     beginAtZero: true,
@@ -125,7 +138,8 @@ final class DashboardUpdate extends Command
                       ]
                   },
                   options: {
-                        responsive: true,
+                        responsive: false,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: {
                                   position: 'bottom',
@@ -142,7 +156,8 @@ final class DashboardUpdate extends Command
                           datasets: totalDatasets
                     },
                     options: {
-                          responsive: true,
+                          responsive: false,
+                          maintainAspectRatio: false,
                           scales: {
                                 y: {
                                     beginAtZero: true,
@@ -169,11 +184,16 @@ final class DashboardUpdate extends Command
                                       (totalSessions-totalContainers), 
                                       totalContainers
                                   ],
+                                  backgroundColor: [
+                                      'rgb(255, 255, 0)',
+                                      'rgb(0, 255, 0)'
+                                  ]
                             }
                       ]
                   },
                   options: {
-                        responsive: true,
+                        responsive: false,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: {
                                   position: 'bottom',
@@ -194,7 +214,10 @@ TPL;
             'data' => [],
             'fill' => true,
             'borderColor' => $this->randomRgbCssColorCode(),
-            'tension' => 0.1
+            'tension' => 0.1,
+            'pointStyle' => false,
+            'pointRadius' => 0,
+            'borderWidth' => 1,
         ];
     }
 
@@ -205,7 +228,7 @@ TPL;
     private function createContainersPerHostChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe();
+        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-2 days'));
         foreach ($dataPoints as $hostAndCountPerPoint) {
             $labels[] = '';
             foreach ($hostAndCountPerPoint as $containersByHost) {
@@ -242,11 +265,11 @@ TPL;
     private function createTotalsChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe();
+        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-2 days'));
         foreach ($dataPoints as $dataPoint) {
             $labels[] = '';
             foreach ($dataPoint as $valueName => $singleValue) {
-                if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
+                if (is_numeric($valueName) || 'timeOfCapture' === $valueName || 'Remaining containers' === $valueName) {
                     continue;
                 }
 
