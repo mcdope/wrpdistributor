@@ -38,3 +38,9 @@ services:
       MYSQL_DATABASE: wrpdistributor
       MYSQL_USER: wrpdistributor
       MYSQL_PASSWORD: wrpdistributor
+
+  sshd_testing_wrpdistributor:
+    container_name: sshd_testing_wrpdistributor
+    build: ./sshd-test
+    links:
+      - php_wrpdistributor

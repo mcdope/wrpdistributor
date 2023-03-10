@@ -71,6 +71,9 @@ bash_nginx:
 bash_mysql:
 	docker-compose exec mysql_$(PROJECT_NAME) bash
 
+bash_sshd:
+	docker-compose exec sshd_testing_$(PROJECT_NAME) bash
+
 restart: stop up
 
 cleanup_sessions:

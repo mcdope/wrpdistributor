@@ -38,12 +38,18 @@ class DockerManager
         private array                     $maxContainers = [],
         private array                     $tlsCertificates = [],
     ) {
-        [
-            $this->containerHosts,
-            $this->privateKeys,
-            $this->maxContainers,
-            $this->tlsCertificates
-        ] = $this->readConfiguredHosts();
+        if (empty($containerHosts)
+            || empty($privateKeys)
+            || empty($maxContainers)
+            || empty($tlsCertificates)
+        ) {
+            [
+                $this->containerHosts,
+                $this->privateKeys,
+                $this->maxContainers,
+                $this->tlsCertificates
+            ] = $this->readConfiguredHosts();
+        }
     }
 
     public function countAvailableContainerHosts(): int
@@ -82,13 +88,6 @@ class DockerManager
     public function countTotalMaxContainers(): int
     {
         return (int) array_sum($this->maxContainers);
-    }
-
-    public function getMaxContainersForHost(string $containerHost): int
-    {
-        return $this->maxContainers[
-            array_search($containerHost, $this->containerHosts, true)
-        ];
     }
 
     /**

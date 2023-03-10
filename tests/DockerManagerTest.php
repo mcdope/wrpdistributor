@@ -3,7 +3,11 @@
 namespace Tests;
 
 use AmiDev\WrpDistributor\DockerManager;
+use AmiDev\WrpDistributor\Exceptions\Docker\HostConfigurationMismatchException;
 
+/**
+ * @backupGlobals enabled
+ */
 final class DockerManagerTest extends BaseTestCase {
     public function testCountSessionsPerContainerHost()
     {
@@ -56,19 +60,71 @@ final class DockerManagerTest extends BaseTestCase {
         }
     }
 
-    public function testGetMaxContainersPerHost()
+    public function testFindUnusedPort()
     {
         $serviceContainer = clone $this->serviceContainer;
 
-        $_ENV['CONTAINER_HOSTS'] .= ',' . 'testhost.tld';
-        $_ENV['MAX_CONTAINERS_RUNNING'] .= ',' . '99';
-        $_ENV['CONTAINER_HOSTS_KEYS'] .= ',' . '/dev/null~/dev/null';
-        $_ENV['CONTAINER_HOSTS_TLS_CERTS'] .= ',' . '/dev/null~/dev/null';
+        $statement = $this->createMock(\PDOStatement::class);
+        $statement
+            ->expects(self::exactly(4))
+            ->method('fetch')
+            ->willReturnOnConsecutiveCalls(
+                ['nextPort' => $_ENV['START_PORT']],
+                ['nextPort' => null],
+                ['nextPort' => 65535],
+                false,
+            );
+
+        $pdo = $this->createMock(\PDO::class);
+        $pdo
+            ->expects(self::exactly(4))
+            ->method('query')
+            ->willReturn($statement);
+
+        $serviceContainer->pdo = $pdo;
         $serviceContainer->dockerManager = new DockerManager($serviceContainer);
 
-        self::assertEquals(
-            99,
-            $serviceContainer->dockerManager->getMaxContainersForHost('testhost.tld')
-        );
+        $r = new \ReflectionClass($serviceContainer->dockerManager);
+        $m = $r->getMethod('findUnusedPort');
+
+        for ($i = 0; $i <= 3; ++$i) {
+            try {
+                $nextPort = $m->invoke($serviceContainer->dockerManager, "");
+            } catch (\Throwable $t) {
+                self::assertEquals(
+                    'No free ports left!',
+                    $t->getMessage()
+                );
+            }
+
+            self::assertGreaterThanOrEqual($_ENV['START_PORT'], $nextPort);
+            self::assertLessThan(65535, $nextPort);
+        }
     }
+
+    public function testReadConfiguredHosts()
+    {
+        $serviceContainer = clone $this->serviceContainer;
+
+        $this->expectException(HostConfigurationMismatchException::class);
+        $oldEnv = $_ENV;
+        $_ENV['CONTAINER_HOSTS'] .= ',' . $_ENV['CONTAINER_HOSTS'];
+
+        // tested indirect, called in __construct
+        $serviceContainer->dockerManager = new DockerManager($serviceContainer);
+        $_ENV = $oldEnv;
+    }
+
+    public function testIsContainerIdValid()
+    {
+        $serviceContainer = clone $this->serviceContainer;
+        $serviceContainer->dockerManager = new DockerManager($serviceContainer);
+
+        $r = new \ReflectionClass($serviceContainer->dockerManager);
+        $m = $r->getMethod('isContainerIdValid');
+
+        self::assertFalse($m->invoke($serviceContainer->dockerManager, 'notAnId'));
+        self::assertTrue($m->invoke($serviceContainer->dockerManager, 'acdea168264a08f9aaca0dfc82ff3551418dfd22d02b713142a6843caa2f61bf'));
+    }
+
 }

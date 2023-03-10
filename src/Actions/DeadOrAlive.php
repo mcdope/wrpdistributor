@@ -33,10 +33,9 @@ readonly class DeadOrAlive implements ActionInterface
                 echo '<li>Container hosts in use:<br><ol>';
                 foreach ($sessionsPerHost as $containerHost => $sessionCountCurrentHost) {
                     echo sprintf(
-                        "<li>%s: %d sessions running (allowed: %d)</li>",
+                        "<li>%s: %d sessions running</li>",
                         substr(md5($containerHost), 0, 8),
                         $sessionCountCurrentHost,
-                        $this->serviceContainer->dockerManager->getMaxContainersForHost($containerHost)
                     );
                 }
                 echo '</ol></li>';
