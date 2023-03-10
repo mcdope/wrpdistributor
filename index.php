@@ -62,7 +62,7 @@ try {
     exit(1);
 }
 
-$currentClientIp = trim($_SERVER['REMOTE_ADDR']);
+$currentClientIp = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim($_SERVER['HTTP_X_FORWARDED_FOR']) : trim($_SERVER['REMOTE_ADDR']);
 $currentClientUserAgent = trim($_SERVER['HTTP_USER_AGENT']);
 // Load session if it exists, else create a new one.
 Session::createSessionTableIfNotExisting($serviceContainer);
