@@ -50,6 +50,10 @@ class DockerManager
                 $this->tlsCertificates
             ] = $this->readConfiguredHosts();
         }
+
+        if (!defined('NET_SSH2_LOGGING')) {
+            define('NET_SSH2_LOGGING', SSH2::LOG_COMPLEX);
+        }
     }
 
     public function countAvailableContainerHosts(): int
@@ -128,14 +132,6 @@ class DockerManager
             ]
         );
 
-        try {
-            $session->port = $this->findUnusedPort($determinedContainerHost['host']);
-        } catch (\RuntimeException) {
-            throw new ContainerStartException(
-                'Capacity limited reached, try again later or adjust distributor configuration.'
-            );
-        }
-
         $session->containerHost = $determinedContainerHost['host'];
         [$userName, $privateKey] = $determinedContainerHost['privateKey'];
         [$tlsCert, $tlsPrivateKey] = $determinedContainerHost['cert'];
@@ -148,11 +144,28 @@ class DockerManager
         } else {
             $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
         }
-        $ssh = new SSH2($session->containerHost);
-        if (!$ssh->login($userName, $key)) {
-            $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost');
+
+        try {
+            $ssh = new SSH2($session->containerHost);
+            if (!$ssh->login($userName, $key)) {
+                $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost, retrying...');
+            }
+        } catch (\Throwable $t) {
+            $ssh = new SSH2($session->containerHost);
+            if (!$ssh->login($userName, $key)) {
+                $this->serviceContainer->logger->error('startContainer() failed to SSH into the containerHost after retry, throwable: ' . $t->getMessage());
+                $this->serviceContainer->logger->error('phpseclib error: ', $ssh->getErrors());
+            }
 
             throw new ContainerStartException('Can\'t login to containerHost! Configuration issue?');
+        }
+
+        try {
+            $nextFreePort = $this->findUnusedPort($determinedContainerHost['host']);
+        } catch (\RuntimeException) {
+            throw new ContainerStartException(
+                'Capacity limited reached, try again later or adjust distributor configuration.'
+            );
         }
 
         $authToken = $session->generateContainerAuthToken();
@@ -163,7 +176,7 @@ class DockerManager
             $tlsCert,
             $tlsPrivateKey,
             "wrp_session_$session->id",
-            $session->port,
+            $nextFreePort,
             $wrpPortForBind,
             self::DOCKER_IMAGE,
             $authToken
@@ -174,7 +187,7 @@ class DockerManager
             [
                 'command' => $containerStartCommand,
                 'sessionId' => $session->id,
-                'port' => $session->port,
+                'port' => $nextFreePort,
                 'containerHost' => $session->containerHost,
                 'useTLS' => (int) $useTLS,
             ]
@@ -182,14 +195,14 @@ class DockerManager
 
         if (!$ssh->exec(
             $containerStartCommand,
-            function (string $shellOutput) use ($session) {
+            function (string $shellOutput) use ($session, $nextFreePort) {
                 if (!$this->isContainerIdValid($shellOutput)) {
                     $this->serviceContainer->logger->warning(
                         'Container start seems to have failed, unexpected output from Docker',
                         [
                             'shellOutput' => $shellOutput,
                             'sessionId' => $session->id,
-                            'port' => $session->port,
+                            'port' => $nextFreePort,
                             'containerHost' => $session->containerHost,
                         ]
                     );
@@ -201,6 +214,7 @@ class DockerManager
 
                 $shellOutput = trim($shellOutput);
                 $session->wrpContainerId = $shellOutput;
+                $session->port = $nextFreePort;
                 $session->upsert();
 
                 $this->serviceContainer->logger->info(
@@ -318,8 +332,19 @@ class DockerManager
         } else {
             $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
         }
-        $ssh = new SSH2($containerHost);
-        if (!$ssh->login($userName, $key)) {
+
+        try {
+            $ssh = new SSH2($containerHost);
+            if (!$ssh->login($userName, $key)) {
+                $this->serviceContainer->logger->error('stopContainer() failed to SSH into the containerHost, retrying...');
+            }
+        } catch (\Throwable $t) {
+            $ssh = new SSH2($containerHost);
+            if (!$ssh->login($userName, $key)) {
+                $this->serviceContainer->logger->error('stopContainer() failed to SSH into the containerHost after retry, throwable: ' . $t->getMessage());
+                $this->serviceContainer->logger->error('phpseclib error: ', $ssh->getErrors());
+            }
+
             throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
         }
 
