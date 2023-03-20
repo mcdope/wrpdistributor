@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace AmiDev\WrpDistributor\Commands;
 
+use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\Session;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @note This command is pretty useless since we intentionally disable logging in production.
+ *       It's only around for dev envs and if you intend to use it you need to modify DockerManager
+ *
+ * @see DockerManager
+ */
 final class CollectWrpSessionLogs extends Command
 {
     /**
