@@ -16,6 +16,13 @@ readonly class ExtendSession implements ActionInterface
      */
     public function __invoke(Session $session): void
     {
+        if ($session->wrpContainerId === null) {
+            // @todo: implement HTTP 409, wait for alb
+            // http_response_code(409);
+            http_response_code(204);
+            return; // no need to keep a session without container alive
+        }
+
         try {
             $session->upsert();
             http_response_code(204);

@@ -70,10 +70,8 @@ try {
     $session = Session::loadFromDatabase($serviceContainer, $currentClientIp, $currentClientUserAgent);
 } catch (\Throwable $ex) {
     $session = Session::create($serviceContainer, $currentClientIp, $currentClientUserAgent);
+    $session->upsert();
 }
-
-// ifLoaded: update lastUsed, ifCreated: store
-$session->upsert();
 
 // Do the actual HTTP handling by using an action map
 /** @var ActionInterface[] $actionMap */

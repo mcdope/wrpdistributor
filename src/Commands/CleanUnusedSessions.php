@@ -22,14 +22,11 @@ final class CleanUnusedSessions extends Command
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
             ' SELECT id, wrpContainerId, containerHost, port
-                    FROM sessions WHERE
-                          TIMESTAMPDIFF(
-                              MINUTE,
-                              IFNULL(lastUsed, started),
-                              NOW()
-                          ) > :timeout'
+                    FROM sessions WHERE lastUsed <= :timeout'
         );
-        $unusedSessionsStmt->execute(['timeout' => $timeout]);
+
+        $datetime = new \DateTime("now -{$timeout} minutes");
+        $unusedSessionsStmt->execute(['timeout' => $datetime->format('c')]);
         return $unusedSessionsStmt->fetchAll(0);
     }
 
