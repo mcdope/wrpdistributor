@@ -25,7 +25,6 @@ readonly class StartSession implements ActionInterface
 
         try {
             $this->serviceContainer->dockerManager->startContainer($session, $clientWantsTLS);
-            $session->upsert();
 
             header('Content-Type: text/xml');
             http_response_code(202);
@@ -37,17 +36,14 @@ readonly class StartSession implements ActionInterface
                 (string) $session->authToken
             );
 
-            exit(0);
+            return;
         } catch (ContainerStartException $containerStartException) {
             if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $containerStartException->getCode()) {
-                $session->upsert();
-
                 http_response_code(204);
-                exit(0);
+                return;
             }
 
             http_response_code(503);
-
             echo sprintf(
                 '<h1>%s</h1><p>%s</p>',
                 'Docker container for this session could not be started!',

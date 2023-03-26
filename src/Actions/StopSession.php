@@ -16,13 +16,10 @@ readonly class StopSession implements ActionInterface
     {
         try {
             $this->serviceContainer->dockerManager->stopContainer($session);
-            $session->upsert();
-
             http_response_code(202);
         } catch (\LogicException $logicException) {
             if (DockerManager::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
                 http_response_code(204);
-                exit(0);
             }
         } catch (\Throwable $throwable) {
             http_response_code(503);
