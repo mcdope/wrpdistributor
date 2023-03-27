@@ -21,8 +21,8 @@ final class CleanUnusedSessions extends Command
     private function getUnusedSessions(int $timeout): array|false
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
-            ' SELECT id, wrpContainerId, containerHost, port
-                    FROM sessions WHERE lastUsed <= :timeout'
+        ' SELECT id, wrpContainerId, containerHost, port
+                FROM sessions WHERE lastUsed <= :timeout OR (lastUsed IS NULL AND started <= :timeout)'
         );
 
         $datetime = new \DateTime("now -{$timeout} minutes");
