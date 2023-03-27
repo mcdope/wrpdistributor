@@ -10,6 +10,8 @@ use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 use AmiDev\WrpDistributor\Statistics;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger as MonologLogger;
 
 // Init stuff
 $environmentVarsToLoad = [
@@ -62,8 +64,23 @@ try {
     exit(1);
 }
 
+$requestLog = new MonologLogger('requests');
+$requestLog->pushHandler(new RotatingFileHandler('logs/requests.log', 30));
+
 $currentClientIp = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim($_SERVER['HTTP_X_FORWARDED_FOR']) : trim($_SERVER['REMOTE_ADDR']);
 $currentClientUserAgent = trim($_SERVER['HTTP_USER_AGENT']);
+
+$requestLog->debug(
+    "{$_SERVER['REQUEST_METHOD']} request started, no session handling yet",
+    [
+        'clientIp' => $currentClientIp,
+        'userAgent' => $currentClientUserAgent,
+        'get' => $_GET,
+        'post' => $_POST,
+        'server' => $_SERVER,
+        'cookie' => $_COOKIE,
+    ]
+);
 // Load session if it exists, else create a new one.
 Session::createSessionTableIfNotExisting($serviceContainer);
 try {
@@ -72,6 +89,19 @@ try {
     $session = Session::create($serviceContainer, $currentClientIp, $currentClientUserAgent);
     $session->upsert();
 }
+
+$requestLog->debug(
+    "{$_SERVER['REQUEST_METHOD']} request got session",
+    [
+        'clientIp' => $currentClientIp,
+        'userAgent' => $currentClientUserAgent,
+        'session' => $session,
+        'get' => $_GET,
+        'post' => $_POST,
+        'server' => $_SERVER,
+        'cookie' => $_COOKIE,
+    ]
+);
 
 // Do the actual HTTP handling by using an action map
 /** @var ActionInterface[] $actionMap */
@@ -98,6 +128,20 @@ if (!array_key_exists($_SERVER['REQUEST_METHOD'], $actionMap)) {
 try {
     $actionMap[$_SERVER['REQUEST_METHOD']]($session);
 
+    $requestLog->debug(
+        "{$_SERVER['REQUEST_METHOD']} request finished",
+        [
+            'clientIp' => $currentClientIp,
+            'userAgent' => $currentClientUserAgent,
+            'httpStatus' => http_response_code(),
+            'session' => $session,
+            'get' => $_GET,
+            'post' => $_POST,
+            'server' => $_SERVER,
+            'cookie' => $_COOKIE,
+        ]
+    );
+
     exit(0);
 } catch (\LogicException $logicException) {
     $serviceContainer->logger->debug($logicException->getMessage(), $logicException->getTrace());
@@ -113,5 +157,20 @@ try {
         'Your request either makes no sense, or is invalid',
         $logicException->getMessage(),
         $logicException->getTraceAsString()
+    );
+
+    $requestLog->debug(
+        "{$_SERVER['REQUEST_METHOD']} request had a LogicException",
+        [
+            'clientIp' => $currentClientIp,
+            'userAgent' => $currentClientUserAgent,
+            'trace' => $logicException->getTrace(),
+            'httpStatus' => http_response_code(),
+            'session' => $session,
+            'get' => $_GET,
+            'post' => $_POST,
+            'server' => $_SERVER,
+            'cookie' => $_COOKIE,
+        ]
     );
 }
