@@ -396,6 +396,7 @@ class DockerManager
             $session->containerHost = null;
 
             $session->upsert();
+            $session->delete();
         })) {
             throw new \RuntimeException("Can't stop container!");
         }

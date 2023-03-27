@@ -124,6 +124,8 @@ class Session
         $this->serviceContainer->pdo
             ->prepare("DELETE FROM `sessions` WHERE id = :id")
             ->execute(['id' => $this->id]);
+
+        $this->id = null;
     }
 
     public static function create(
