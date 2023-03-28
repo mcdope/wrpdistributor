@@ -1,3 +1,5 @@
+[![CI (Build, phpcs, psalm, phpunit)](https://github.com/guthand/tobi_wrpdistributor/actions/workflows/build.yml/badge.svg)](https://github.com/guthand/tobi_wrpdistributor/actions/workflows/build.yml)
+
 ### What the heck is this? ### 
 
 WrpDistributor is a small application to allow https://github.com/alb42/wrp to be used by multiple clients via 

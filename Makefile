@@ -45,19 +45,19 @@ build:
 	docker-compose up --build -d
 
 composer:
-	docker-compose exec php_$(PROJECT_NAME) composer install
+	docker-compose exec -it php_$(PROJECT_NAME) composer install
 
 composer_require:
 	docker-compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
 
 psalm:
-	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+	docker-compose exec -it php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 update_psalm_baseline:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml --update-baseline
 
 phpcs:
-	docker-compose exec php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
+	docker-compose exec -it php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
 phpcs-fix:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer fix src/ index.php bin/console
@@ -89,7 +89,7 @@ migrate_database:
 	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
 phpunit:
-	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/phpunit \
+	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/phpunit \
 		--bootstrap vendor/autoload.php \
 		--coverage-html .tooling/phpunit/coverage \
 		--coverage-filter src \

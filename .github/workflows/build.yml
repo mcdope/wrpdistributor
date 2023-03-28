@@ -1,0 +1,25 @@
+name: CI (Build, phpcs, psalm, phpunit)
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  ci:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build containers
+        run: make build
+      - name: Start
+        run: make up
+      - name: phpcs
+        run: make phpcs
+      - name: psalm
+        run: make psalm
+      - name: phpunit
+        run: make phpunit
