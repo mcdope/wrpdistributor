@@ -85,9 +85,6 @@ statistics_collect:
 statistics_dashboard_update:
 	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
 
-containers_log_collect:
-	docker-compose exec php_$(PROJECT_NAME) ./bin/console containers:log:collect
-
 migrate_database:
 	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
