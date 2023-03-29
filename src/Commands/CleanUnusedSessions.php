@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace AmiDev\WrpDistributor\Commands;
 
@@ -16,17 +16,17 @@ final class CleanUnusedSessions extends Command
 {
     /**
      * @param mixed $timeout
-     * @return array|false
      */
     private function getUnusedSessions(int $timeout): array|false
     {
         $unusedSessionsStmt = $this->serviceContainer->pdo->prepare(
-        ' SELECT id, wrpContainerId, containerHost, port
-                FROM sessions WHERE lastUsed <= :timeout OR (lastUsed IS NULL AND started <= :timeout)'
+            ' SELECT id, wrpContainerId, containerHost, port
+                FROM sessions WHERE lastUsed <= :timeout OR (lastUsed IS NULL AND started <= :timeout)',
         );
 
         $datetime = new \DateTime("now -{$timeout} minutes");
         $unusedSessionsStmt->execute(['timeout' => $datetime->format('c')]);
+
         return $unusedSessionsStmt->fetchAll(0);
     }
 
@@ -43,7 +43,7 @@ final class CleanUnusedSessions extends Command
             'timeout',
             InputArgument::OPTIONAL,
             'Minutes to have passed to consider a session being unused',
-            10
+            10,
         );
     }
 
@@ -74,11 +74,11 @@ final class CleanUnusedSessions extends Command
                 }
 
                 $session->delete();
-                $success++;
+                ++$success;
             } catch (\LogicException $logicException) {
                 if (DockerManager::EXCEPTION_HAS_NO_CONTAINER === $logicException->getCode()) {
                     // Not an error, nothing to clean up
-                    $success++;
+                    ++$success;
                 } else {
                     throw $logicException;
                 }
@@ -87,10 +87,10 @@ final class CleanUnusedSessions extends Command
 
                 $this->serviceContainer->logger->warning(
                     'Throwable while cleaning up unused sessions! Message: ' . $throwable->getMessage(),
-                    $throwable->getTrace()
+                    $throwable->getTrace(),
                 );
 
-                $error++;
+                ++$error;
             }
 
             /** @noinspection DisconnectedForeachInstructionInspection */
@@ -103,8 +103,8 @@ final class CleanUnusedSessions extends Command
                 'INFO: Cleanup of %d sessions finished, %d sessions terminated successfully - %d sessions failed to terminate.',
                 count($unusedSessions),
                 $success,
-                $error
-            )
+                $error,
+            ),
         );
 
         $this->serviceContainer->logger->info(
@@ -112,8 +112,8 @@ final class CleanUnusedSessions extends Command
                 'Cleanup of %d sessions finished, %d sessions terminated successfully - %d sessions failed to terminate. Check entries above for details.',
                 count($unusedSessions),
                 $success,
-                $error
-            )
+                $error,
+            ),
         );
 
         return self::SUCCESS;

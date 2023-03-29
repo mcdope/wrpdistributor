@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Tests;
 
 use AmiDev\WrpDistributor\Logger;
@@ -7,7 +9,7 @@ use AmiDev\WrpDistributor\ServiceContainer;
 use Dotenv\Dotenv;
 use PHPUnit\Framework\TestCase;
 
-class BaseTestCase extends TestCase
+final class BaseTestCase extends TestCase
 {
     protected ServiceContainer $serviceContainer;
 
@@ -25,7 +27,7 @@ class BaseTestCase extends TestCase
             'SESSION_DATABASE_USER',
             'SESSION_DATABASE_PASS',
             'START_PORT',
-            'AUTH_TOKEN'
+            'AUTH_TOKEN',
         ];
 
         $dotenv = Dotenv::createImmutable(__DIR__ . '/../', ['.env.test']);
@@ -38,10 +40,8 @@ class BaseTestCase extends TestCase
         );
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         unset($this->serviceContainer);
     }
 }
-
-

@@ -1,15 +1,15 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Tests;
 
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
-use AmiDev\WrpDistributor\Session;
-use Monolog\Handler\RotatingFileHandler;
-use Psr\Log\LoggerInterface;
 
-final class ServiceContainerTest extends BaseTestCase {
-    public function testCanBeConstructed()
+final class ServiceContainerTest extends BaseTestCase
+{
+    public function testCanBeConstructed(): void
     {
         $serviceContainer = new ServiceContainer(
             $this->createMock(Logger::class),

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 /** @noinspection PhpMultipleClassDeclarationsInspection */
 
 namespace AmiDev\WrpDistributor;
@@ -9,7 +11,7 @@ use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
 
-class Logger
+final class Logger
 {
     private LoggerInterface $logger;
 

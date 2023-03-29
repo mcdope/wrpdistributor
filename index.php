@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types = 1);
 require 'vendor/autoload.php';
 
 use AmiDev\WrpDistributor\Actions\ActionInterface;
@@ -24,7 +26,7 @@ $environmentVarsToLoad = [
     'SESSION_DATABASE_USER',
     'SESSION_DATABASE_PASS',
     'START_PORT',
-    'AUTH_TOKEN'
+    'AUTH_TOKEN',
 ];
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -33,6 +35,7 @@ $dotenv->required($environmentVarsToLoad);
 
 if (!isset($_SERVER['HTTP_BEARER']) || $_ENV['AUTH_TOKEN'] !== $_SERVER['HTTP_BEARER']) {
     http_response_code(401);
+
     return;
 }
 
@@ -58,7 +61,7 @@ try {
             </p>',
         'Startup error: invalid container host configuration!',
         $throwable->getMessage(),
-        $throwable->getTraceAsString()
+        $throwable->getTraceAsString(),
     );
 
     exit(1);
@@ -79,7 +82,7 @@ $requestLog->debug(
         'post' => $_POST,
         'server' => $_SERVER,
         'cookie' => $_COOKIE,
-    ]
+    ],
 );
 // Load session if it exists, else create a new one.
 Session::createSessionTableIfNotExisting($serviceContainer);
@@ -100,7 +103,7 @@ $requestLog->debug(
         'post' => $_POST,
         'server' => $_SERVER,
         'cookie' => $_COOKIE,
-    ]
+    ],
 );
 
 // Do the actual HTTP handling by using an action map
@@ -117,8 +120,8 @@ if (!array_key_exists($_SERVER['REQUEST_METHOD'], $actionMap)) {
         'Invalid request!',
         [
             'method' => $_SERVER['REQUEST_METHOD'],
-            'request' => $_REQUEST
-        ]
+            'request' => $_REQUEST,
+        ],
     );
 
     http_response_code(405);
@@ -139,7 +142,7 @@ try {
             'post' => $_POST,
             'server' => $_SERVER,
             'cookie' => $_COOKIE,
-        ]
+        ],
     );
 
     exit(0);
@@ -156,7 +159,7 @@ try {
             </p>',
         'Your request either makes no sense, or is invalid',
         $logicException->getMessage(),
-        $logicException->getTraceAsString()
+        $logicException->getTraceAsString(),
     );
 
     $requestLog->debug(
@@ -171,6 +174,6 @@ try {
             'post' => $_POST,
             'server' => $_SERVER,
             'cookie' => $_COOKIE,
-        ]
+        ],
     );
 }

@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Actions;
 
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
-readonly class DeadOrAlive implements ActionInterface
+final readonly class DeadOrAlive implements ActionInterface
 {
     public function __construct(private ServiceContainer $serviceContainer)
     {
     }
 
     /**
-     * Displays a small status information pages
+     * Displays a small status information pages.
      */
     public function __invoke(Session $session): void
     {
@@ -26,14 +28,14 @@ readonly class DeadOrAlive implements ActionInterface
             echo '<h1>wrp-distributor status</h1>';
             echo '<p>It\'s alive! Here are some statistics about the current instance:</p>';
             echo '<ul>';
-            echo sprintf("<li>Current session count: %s</li>", $sessionCount);
-            echo sprintf("<li>Current container count: %s</li>", $portsUsedCount);
-            echo sprintf("<li>Available container hosts: %s</li>", $containerHostsAvailable);
+            echo sprintf('<li>Current session count: %s</li>', $sessionCount);
+            echo sprintf('<li>Current container count: %s</li>', $portsUsedCount);
+            echo sprintf('<li>Available container hosts: %s</li>', $containerHostsAvailable);
             if (\count($sessionsPerHost)) {
                 echo '<li>Container hosts in use:<br><ol>';
                 foreach ($sessionsPerHost as $containerHost => $sessionCountCurrentHost) {
                     echo sprintf(
-                        "<li>%s: %d sessions running</li>",
+                        '<li>%s: %d sessions running</li>',
                         substr(md5($containerHost), 0, 8),
                         $sessionCountCurrentHost,
                     );
@@ -41,8 +43,8 @@ readonly class DeadOrAlive implements ActionInterface
                 echo '</ol></li>';
             }
             echo sprintf(
-                "<li>Unused configuration potential / remaining containers: %s</li>",
-                $totalMaxContainers - $portsUsedCount
+                '<li>Unused configuration potential / remaining containers: %s</li>',
+                $totalMaxContainers - $portsUsedCount,
             );
             echo '</ul>';
 
@@ -55,7 +57,7 @@ readonly class DeadOrAlive implements ActionInterface
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
-                ]
+                ],
             );
 
             exit(1);

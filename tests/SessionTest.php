@@ -1,23 +1,23 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Tests;
 
-use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\Session;
-use Monolog\Handler\RotatingFileHandler;
-use Psr\Log\LoggerInterface;
 
-final class SessionTest extends BaseTestCase {
+final class SessionTest extends BaseTestCase
+{
     public function testSessionCanBeCreatedFromHttpData(): void
     {
         $session = Session::create(
             $this->serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
 
-        self::assertEquals('1.2.3.4', $session->clientIp);
-        self::assertEquals('userAgent', $session->clientUserAgent);
+        self::assertSame('1.2.3.4', $session->clientIp);
+        self::assertSame('userAgent', $session->clientUserAgent);
     }
 
     public function testNewSessionCanBeUpserted(): void
@@ -28,17 +28,20 @@ final class SessionTest extends BaseTestCase {
         $statement
             ->expects(self::once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('lastInsertId')
-            ->willReturn((string) mt_rand());
+            ->willReturn((string) mt_rand())
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
@@ -46,7 +49,7 @@ final class SessionTest extends BaseTestCase {
         $session = Session::create(
             $serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
         $session->upsert();
 
@@ -61,17 +64,20 @@ final class SessionTest extends BaseTestCase {
         $statement
             ->expects(self::exactly(2))
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $pdo
             ->expects(self::exactly(2))
             ->method('prepare')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('lastInsertId')
-            ->willReturn((string) mt_rand());
+            ->willReturn((string) mt_rand())
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
@@ -79,7 +85,7 @@ final class SessionTest extends BaseTestCase {
         $session = Session::create(
             $serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
         $session->upsert();
 
@@ -89,8 +95,8 @@ final class SessionTest extends BaseTestCase {
         $lastUsedAfterCreate = $session->lastUsed;
 
         $session->upsert();
-        self::assertNotEquals($lastUsedAfterCreate, $session->lastUsed);
-        self::assertEquals($idAfterCreate, $session->id);
+        self::assertNotSame($lastUsedAfterCreate, $session->lastUsed);
+        self::assertSame($idAfterCreate, $session->id);
     }
 
     public function testSessionCanBeDeleted(): void
@@ -101,17 +107,20 @@ final class SessionTest extends BaseTestCase {
         $statement
             ->expects(self::exactly(2))
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $pdo
             ->expects(self::exactly(2))
             ->method('prepare')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('lastInsertId')
-            ->willReturn((string) mt_rand());
+            ->willReturn((string) mt_rand())
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
@@ -119,7 +128,7 @@ final class SessionTest extends BaseTestCase {
         $session = Session::create(
             $serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
         $session->upsert();
 
@@ -135,7 +144,8 @@ final class SessionTest extends BaseTestCase {
         $statement
             ->expects(self::once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $statement
             ->expects(self::once())
@@ -149,12 +159,14 @@ final class SessionTest extends BaseTestCase {
                 'port' => random_int(1000, 64000),
                 'started' => (new \DateTime('yesterday'))->format('c'),
                 'lastUsed' => (new \DateTime())->format('c'),
-            ]);
+            ])
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
@@ -177,7 +189,8 @@ final class SessionTest extends BaseTestCase {
             ->expects(self::once())
             ->method('execute')
             ->with(['sessionId' => 42])
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $statement
             ->expects(self::once())
@@ -191,19 +204,21 @@ final class SessionTest extends BaseTestCase {
                 'port' => random_int(1000, 64000),
                 'started' => (new \DateTime('yesterday'))->format('c'),
                 'lastUsed' => (new \DateTime())->format('c'),
-            ]);
+            ])
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
 
         $session = Session::loadFromDatabaseById(
             $serviceContainer,
-            42
+            42,
         );
 
         self::assertNotNull($session->id);
@@ -218,12 +233,14 @@ final class SessionTest extends BaseTestCase {
         $statement
             ->expects(self::once())
             ->method('fetch')
-            ->willReturn([1337]);
+            ->willReturn([1337])
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('query')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->pdo = $pdo;
@@ -231,7 +248,7 @@ final class SessionTest extends BaseTestCase {
         $session = Session::create(
             $serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
 
         $session->countAllSessions();
@@ -239,17 +256,18 @@ final class SessionTest extends BaseTestCase {
 
     public function testGenerateContainerToken()
     {
-        function sprintf(string $a, ...$values) {
+        function sprintf(string $a, ...$values)
+        {
             return 'totallyNotAnSha1';
         }
 
         $session = Session::create(
             $this->serviceContainer,
             '1.2.3.4',
-            'userAgent'
+            'userAgent',
         );
 
         $token = $session->generateContainerAuthToken();
-        self::assertNotEquals('totallyNotAnSha1', $token);
+        self::assertNotSame('totallyNotAnSha1', $token);
     }
 }

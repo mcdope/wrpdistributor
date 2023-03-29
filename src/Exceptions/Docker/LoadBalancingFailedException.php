@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class LoadBalancingFailedException extends LoadBalancingException
+final class LoadBalancingFailedException extends LoadBalancingException
 {
-
 }

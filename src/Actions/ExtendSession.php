@@ -1,25 +1,28 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Actions;
 
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
-readonly class ExtendSession implements ActionInterface
+final readonly class ExtendSession implements ActionInterface
 {
     public function __construct(private ServiceContainer $serviceContainer)
     {
     }
 
     /**
-     * Just upsert()s the session to update lastUsed, to prevent it from timing out
+     * Just upsert()s the session to update lastUsed, to prevent it from timing out.
      */
     public function __invoke(Session $session): void
     {
-        if ($session->wrpContainerId === null) {
+        if (null === $session->wrpContainerId) {
             // @todo: implement HTTP 409, wait for alb
             // http_response_code(409);
             http_response_code(204);
+
             return; // no need to keep a session without container alive
         }
 
@@ -34,7 +37,7 @@ readonly class ExtendSession implements ActionInterface
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
-                ]
+                ],
             );
 
             exit(1);

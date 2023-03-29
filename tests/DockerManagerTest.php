@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Tests;
 
 use AmiDev\WrpDistributor\DockerManager;
@@ -8,8 +10,9 @@ use AmiDev\WrpDistributor\Exceptions\Docker\HostConfigurationMismatchException;
 /**
  * @backupGlobals enabled
  */
-final class DockerManagerTest extends BaseTestCase {
-    public function testCountSessionsPerContainerHost()
+final class DockerManagerTest extends BaseTestCase
+{
+    public function testCountSessionsPerContainerHost(): void
     {
         $serviceContainer = clone $this->serviceContainer;
 
@@ -26,13 +29,15 @@ final class DockerManagerTest extends BaseTestCase {
                     'containerHost' => 'host2.tld',
                     'count' => 20,
                 ],
-            ]);
+            ])
+        ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
             ->expects(self::once())
             ->method('query')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $serviceContainer->pdo = $pdo;
 
@@ -49,10 +54,10 @@ final class DockerManagerTest extends BaseTestCase {
             switch ($host) {
                 case 'host2.tld':
                 case 'host1.tld':
-                    self::assertEquals(20, (int) $value);
+                    self::assertSame(20, (int) $value);
                     break;
                 default:
-                    self::assertEquals(0, (int) $value);
+                    self::assertSame(0, (int) $value);
             }
 
             self::assertIsString($host);
@@ -60,7 +65,7 @@ final class DockerManagerTest extends BaseTestCase {
         }
     }
 
-    public function testFindUnusedPort()
+    public function testFindUnusedPort(): void
     {
         $serviceContainer = clone $this->serviceContainer;
 
@@ -73,13 +78,15 @@ final class DockerManagerTest extends BaseTestCase {
                 ['nextPort' => null],
                 ['nextPort' => 65535],
                 false,
-            );
+            )
+        ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
             ->expects(self::exactly(4))
             ->method('query')
-            ->willReturn($statement);
+            ->willReturn($statement)
+        ;
 
         $serviceContainer->pdo = $pdo;
         $serviceContainer->dockerManager = new DockerManager($serviceContainer);
@@ -89,11 +96,11 @@ final class DockerManagerTest extends BaseTestCase {
 
         for ($i = 0; $i <= 3; ++$i) {
             try {
-                $nextPort = $m->invoke($serviceContainer->dockerManager, "");
+                $nextPort = $m->invoke($serviceContainer->dockerManager, '');
             } catch (\Throwable $t) {
-                self::assertEquals(
+                self::assertSame(
                     'No free ports left!',
-                    $t->getMessage()
+                    $t->getMessage(),
                 );
             }
 
@@ -102,7 +109,7 @@ final class DockerManagerTest extends BaseTestCase {
         }
     }
 
-    public function testReadConfiguredHosts()
+    public function testReadConfiguredHosts(): void
     {
         $serviceContainer = clone $this->serviceContainer;
 
@@ -115,7 +122,7 @@ final class DockerManagerTest extends BaseTestCase {
         $_ENV = $oldEnv;
     }
 
-    public function testIsContainerIdValid()
+    public function testIsContainerIdValid(): void
     {
         $serviceContainer = clone $this->serviceContainer;
         $serviceContainer->dockerManager = new DockerManager($serviceContainer);
@@ -126,5 +133,4 @@ final class DockerManagerTest extends BaseTestCase {
         self::assertFalse($m->invoke($serviceContainer->dockerManager, 'notAnId'));
         self::assertTrue($m->invoke($serviceContainer->dockerManager, 'acdea168264a08f9aaca0dfc82ff3551418dfd22d02b713142a6843caa2f61bf'));
     }
-
 }

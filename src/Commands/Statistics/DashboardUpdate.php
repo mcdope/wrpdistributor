@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace AmiDev\WrpDistributor\Commands\Statistics;
 
@@ -223,6 +223,7 @@ TPL;
 
     /**
      * @return string[]
+     *
      * @throws \JsonException
      */
     private function createContainersPerHostChart(): array
@@ -255,11 +256,13 @@ TPL;
             $jsDatasets .= json_encode($dataset, JSON_THROW_ON_ERROR) . ',';
         }
         $jsDatasets = substr($jsDatasets, 0, -1) . ']';
+
         return [$jsLabels, $jsDatasets];
     }
 
     /**
      * @return string[]
+     *
      * @throws \JsonException
      */
     private function createTotalsChart(): array
@@ -294,6 +297,7 @@ TPL;
             $jsDatasets .= json_encode($dataset, JSON_THROW_ON_ERROR) . ',';
         }
         $jsDatasets = substr($jsDatasets, 0, -1) . ']';
+
         return [$jsLabels, $jsDatasets];
     }
 
@@ -343,12 +347,13 @@ TPL;
                     $this->serviceContainer->dockerManager->countsPortsUsed(),
                     $this->serviceContainer->dockerManager->countTotalMaxContainers(),
                     $jsTotalLabels,
-                    $jsTotalDatasets
+                    $jsTotalDatasets,
                 ],
-                self::DASHBOARD_TEMPLATE
+                self::DASHBOARD_TEMPLATE,
             );
 
             file_put_contents('dashboard.html', $htmlOutput);
+
             return self::SUCCESS;
         } catch (\Throwable $throwable) {
             $this->serviceContainer->logger->warning(
@@ -356,7 +361,7 @@ TPL;
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
-                ]
+                ],
             );
 
             return self::FAILURE;

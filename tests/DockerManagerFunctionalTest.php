@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Tests;
 
 use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
-
 
 final class DockerManagerFunctionalTest extends BaseTestCase
 {
@@ -16,13 +17,15 @@ final class DockerManagerFunctionalTest extends BaseTestCase
         $statementUpsert
             ->expects(self::once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $statementPort = $this->createMock(\PDOStatement::class);
         $statementPort
             ->expects(self::once())
             ->method('fetch')
-            ->willReturn(['nextPort' => 9567]);
+            ->willReturn(['nextPort' => 9567])
+        ;
 
         $statement = $this->createMock(\PDOStatement::class);
         $statement
@@ -33,7 +36,8 @@ final class DockerManagerFunctionalTest extends BaseTestCase
                     'containerHost' => 'sshd_testing_wrpdistributor',
                     'count' => 2,
                 ],
-            ]);
+            ])
+        ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
@@ -42,12 +46,14 @@ final class DockerManagerFunctionalTest extends BaseTestCase
             ->willReturnOnConsecutiveCalls(
                 $statement,
                 $statementPort,
-            );
+            )
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statementUpsert);
+            ->willReturn($statementUpsert)
+        ;
 
         $serviceContainer = new ServiceContainer(
             new Logger(),
@@ -69,7 +75,7 @@ final class DockerManagerFunctionalTest extends BaseTestCase
             ['sshd_testing_wrpdistributor'],
             [['phpunit', 'phpunit']],
             [99],
-            [['/dev/null','/dev/null']],
+            [['/dev/null', '/dev/null']],
         );
         $serviceContainer->logger->debug('created DockerManager, calling startContainer');
         $dockerManager->startContainer($session);
@@ -82,13 +88,15 @@ final class DockerManagerFunctionalTest extends BaseTestCase
         $statementUpsert
             ->expects(self::once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $statementPort = $this->createMock(\PDOStatement::class);
         $statementPort
             ->expects(self::once())
             ->method('fetch')
-            ->willReturn(['nextPort' => 9567]);
+            ->willReturn(['nextPort' => 9567])
+        ;
 
         $statement = $this->createMock(\PDOStatement::class);
         $statement
@@ -99,7 +107,8 @@ final class DockerManagerFunctionalTest extends BaseTestCase
                     'containerHost' => 'sshd_testing_wrpdistributor',
                     'count' => 2,
                 ],
-            ]);
+            ])
+        ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
@@ -108,12 +117,14 @@ final class DockerManagerFunctionalTest extends BaseTestCase
             ->willReturnOnConsecutiveCalls(
                 $statement,
                 $statementPort,
-            );
+            )
+        ;
 
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statementUpsert);
+            ->willReturn($statementUpsert)
+        ;
 
         $serviceContainer = new ServiceContainer(
             new Logger(),
@@ -135,7 +146,7 @@ final class DockerManagerFunctionalTest extends BaseTestCase
             ['sshd_testing_wrpdistributor'],
             [['phpunit', 'phpunit']],
             [99],
-            [['/dev/null','/dev/null']],
+            [['/dev/null', '/dev/null']],
         );
         $serviceContainer->logger->debug('created DockerManager, calling startContainer');
         $dockerManager->startContainer($session);
@@ -148,13 +159,15 @@ final class DockerManagerFunctionalTest extends BaseTestCase
         $statementUpsert
             ->expects(self::once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
             ->expects(self::once())
             ->method('prepare')
-            ->willReturn($statementUpsert);
+            ->willReturn($statementUpsert)
+        ;
 
         $serviceContainer = new ServiceContainer(
             new Logger(),
@@ -178,11 +191,10 @@ final class DockerManagerFunctionalTest extends BaseTestCase
             ['sshd_testing_wrpdistributor'],
             [['phpunit', 'phpunit']],
             [99],
-            [['/dev/null','/dev/null']],
+            [['/dev/null', '/dev/null']],
         );
         $serviceContainer->logger->debug('created DockerManager, calling stopContainer');
         $dockerManager->stopContainer($session);
         $serviceContainer->logger->debug('done');
     }
-
 }

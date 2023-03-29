@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Exceptions\Docker;
 
-class LoadBalancingException extends \InvalidArgumentException
+final class LoadBalancingException extends \InvalidArgumentException
 {
-
 }

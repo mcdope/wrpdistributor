@@ -20,5 +20,6 @@ vendor/
 thumbs.db
 .tooling/phpcs/.phpcs_cache
 .tooling/phpunit
+.tooling/.php-cs-fixer.cache
 *.png
 site.webmanifest

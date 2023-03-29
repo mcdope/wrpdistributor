@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace AmiDev\WrpDistributor\Commands\Statistics;
 
@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class Collect extends Command
 {
-
     /**
      * @noinspection PhpUnused
      *

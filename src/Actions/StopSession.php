@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Actions;
 
 use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
-readonly class StopSession implements ActionInterface
+final readonly class StopSession implements ActionInterface
 {
     public function __construct(private ServiceContainer $serviceContainer)
     {
@@ -29,7 +31,7 @@ readonly class StopSession implements ActionInterface
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
-                ]
+                ],
             );
 
             exit(1);

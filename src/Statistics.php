@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor;
 
-class Statistics
+final class Statistics
 {
     public function __construct(private ServiceContainer $serviceContainer)
     {
@@ -33,7 +35,7 @@ class Statistics
                          containerHostsAvailable, containersInUsePerHost
                    ) VALUES (
                          :activeSessions, :containersRunning, :remainingContainers, :containerHosts, :containerHostsWithSessions
-                   )'
+                   )',
         );
 
         $statement->execute($dataPoint);
@@ -84,6 +86,7 @@ class Statistics
         ');
 
         $statement->execute(['from' => $from->format('c'), 'till' => $till->format('c')]);
+
         return $statement->fetchAll();
     }
 
@@ -95,13 +98,13 @@ class Statistics
                     WHERE TABLE_SCHEMA LIKE 'wrpdistributor' 
                       AND TABLE_TYPE LIKE 'BASE TABLE' 
                       AND TABLE_NAME = 'statistics'
-               )"
+               )",
         )->fetch();
 
-        if (0 === (int)$tableExists[0]) {
+        if (0 === (int) $tableExists[0]) {
             $serviceContainer->pdo->query(file_get_contents('db/statistics.sql'));
             $serviceContainer->logger->info(
-                'Statistics table not found, created'
+                'Statistics table not found, created',
             );
         }
     }

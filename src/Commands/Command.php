@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Commands;
 
 use AmiDev\WrpDistributor\Logger;
@@ -13,7 +15,7 @@ use Dotenv\Exception\InvalidPathException;
 use Symfony\Component\Console\Command\Command as SymfonyConsoleCommand;
 use Symfony\Component\Console\Exception\LogicException;
 
-class Command extends SymfonyConsoleCommand
+final class Command extends SymfonyConsoleCommand
 {
     protected ServiceContainer $serviceContainer;
 
@@ -37,7 +39,7 @@ class Command extends SymfonyConsoleCommand
             'SESSION_DATABASE_USER',
             'SESSION_DATABASE_PASS',
             'START_PORT',
-            'AUTH_TOKEN'
+            'AUTH_TOKEN',
         ];
 
         $dotenv = Dotenv::createImmutable(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);

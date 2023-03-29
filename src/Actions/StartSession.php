@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor\Actions;
 
 use AmiDev\WrpDistributor\DockerManager;
@@ -7,21 +9,21 @@ use AmiDev\WrpDistributor\Exceptions\Docker\ContainerStartException;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
-readonly class StartSession implements ActionInterface
+final readonly class StartSession implements ActionInterface
 {
     public function __construct(private ServiceContainer $serviceContainer)
     {
     }
 
     /**
-     * Starts container for this session and upsert()s it if successfully started
+     * Starts container for this session and upsert()s it if successfully started.
      *
      * @throws \Exception
      */
     public function __invoke(Session $session): void
     {
-        parse_str(file_get_contents("php://input"), $input);
-        $clientWantsTLS = isset($input['ssl']) && (bool)$input['ssl'];
+        parse_str(file_get_contents('php://input'), $input);
+        $clientWantsTLS = isset($input['ssl']) && (bool) $input['ssl'];
 
         try {
             $this->serviceContainer->dockerManager->startContainer($session, $clientWantsTLS);
@@ -33,13 +35,14 @@ readonly class StartSession implements ActionInterface
                 '<xml><wrpUrl>%s:%d</wrpUrl><token>%s</token></xml>',
                 (string) $session->containerHost,
                 (int) $session->port,
-                (string) $session->authToken
+                (string) $session->authToken,
             );
 
             return;
         } catch (ContainerStartException $containerStartException) {
             if (DockerManager::EXCEPTION_ALREADY_HAS_CONTAINER === $containerStartException->getCode()) {
                 http_response_code(204);
+
                 return;
             }
 
@@ -59,7 +62,7 @@ readonly class StartSession implements ActionInterface
                 [
                     'message' => $throwable->getMessage(),
                     'trace' => $throwable->getTrace(),
-                ]
+                ],
             );
 
             echo sprintf(
@@ -71,7 +74,7 @@ readonly class StartSession implements ActionInterface
                             </p>',
                 'Unexpected problem while starting the container for your session.',
                 $throwable->getMessage(),
-                $throwable->getTraceAsString()
+                $throwable->getTraceAsString(),
             );
 
             exit(1);

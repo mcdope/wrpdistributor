@@ -1,21 +1,18 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor;
 
 use AmiDev\WrpDistributor\Exceptions\Docker\HostConfigurationMismatchException;
 
-class ServiceContainer
+final class ServiceContainer
 {
-    /**
-     * @psalm-readonly
-     */
+    /** @psalm-readonly */
     public DockerManager $dockerManager;
 
-    /**
-     * @psalm-readonly
-     */
+    /** @psalm-readonly */
     public Statistics $statistics;
-
 
     /**
      * @throws HostConfigurationMismatchException

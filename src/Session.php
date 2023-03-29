@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace AmiDev\WrpDistributor;
 
-class Session
+final class Session
 {
     public string $clientIp;
     public string $clientUserAgent;
@@ -51,7 +53,7 @@ class Session
         $this->lastUsed = new \DateTime();
 
         if (null === $this->id) {
-            $query = "INSERT INTO `sessions` (
+            $query = 'INSERT INTO `sessions` (
                             clientIp, 
                             clientUserAgent,
                             wrpContainerId,
@@ -65,7 +67,7 @@ class Session
                             :containerHost,
                             :port,
                             :started
-                      )";
+                      )';
 
             $parameters = [
                 'clientIp' => $this->clientIp,
@@ -76,12 +78,12 @@ class Session
                 'started' => $this->started?->format('c'),
             ];
         } else {
-            $query = "UPDATE `sessions` SET
+            $query = 'UPDATE `sessions` SET
                             wrpContainerId = :wrpContainerId,
                             containerHost = :containerHost,
                             port = :port,
                             lastUsed = :lastUsed
-                      WHERE `id` = :id";
+                      WHERE `id` = :id';
 
             $parameters = [
                 'wrpContainerId' => $this->wrpContainerId,
@@ -97,7 +99,7 @@ class Session
             $this->serviceContainer->logger->error('Session upsert failed');
 
             throw new \RuntimeException(
-                'Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode()
+                'Can\'t upsert session! PDO Error: ' . $this->serviceContainer->pdo->errorCode(),
             );
         }
 
@@ -122,8 +124,9 @@ class Session
         }
 
         $this->serviceContainer->pdo
-            ->prepare("DELETE FROM `sessions` WHERE id = :id")
-            ->execute(['id' => $this->id]);
+            ->prepare('DELETE FROM `sessions` WHERE id = :id')
+            ->execute(['id' => $this->id])
+        ;
 
         $this->id = null;
     }
@@ -131,7 +134,7 @@ class Session
     public static function create(
         ServiceContainer $serviceContainer,
         string $clientIp,
-        string $clientUserAgent
+        string $clientUserAgent,
     ): self {
         return new self(
             $serviceContainer,
@@ -146,10 +149,10 @@ class Session
     public static function loadFromDatabase(
         ServiceContainer $serviceContainer,
         string $clientIp,
-        string $clientUserAgent
+        string $clientUserAgent,
     ): self {
         $sessionDataStmt = $serviceContainer->pdo->prepare(
-            "SELECT * FROM `sessions` WHERE clientIp = :clientIp AND clientUserAgent = :clientUserAgent"
+            'SELECT * FROM `sessions` WHERE clientIp = :clientIp AND clientUserAgent = :clientUserAgent',
         );
 
         if (!$sessionDataStmt
@@ -183,10 +186,10 @@ class Session
      */
     public static function loadFromDatabaseById(
         ServiceContainer $serviceContainer,
-        int $sessionId
+        int $sessionId,
     ): self {
         $sessionDataStmt = $serviceContainer->pdo->prepare(
-            "SELECT * FROM `sessions` WHERE id = :sessionId"
+            'SELECT * FROM `sessions` WHERE id = :sessionId',
         );
 
         if (!$sessionDataStmt->execute(['sessionId' => $sessionId])) {
@@ -219,13 +222,13 @@ class Session
                     WHERE TABLE_SCHEMA LIKE 'wrpdistributor' 
                       AND TABLE_TYPE LIKE 'BASE TABLE' 
                       AND TABLE_NAME = 'sessions'
-               )"
+               )",
         )->fetch();
 
-        if (0 === (int)$tableExists[0]) {
+        if (0 === (int) $tableExists[0]) {
             $serviceContainer->pdo->query(file_get_contents('db/sessions.sql'));
             $serviceContainer->logger->info(
-                'Sessions table not found, created'
+                'Sessions table not found, created',
             );
         }
     }
@@ -248,7 +251,7 @@ class Session
             (int) $this->id,
             $this->clientIp,
             $this->clientUserAgent,
-            bin2hex(random_bytes(2048))
+            bin2hex(random_bytes(2048)),
         );
 
         return sha1($tokenSourceString);

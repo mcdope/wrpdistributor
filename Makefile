@@ -62,7 +62,7 @@ phpcs:
 	docker-compose exec -it php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
 phpcs-fix:
-	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer fix src/ index.php bin/console
+	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer --allow-risky=yes --config=php-cs-fixer.dist.php fix src/ tests/ index.php bin/console
 
 bash_php:
 	docker-compose exec php_$(PROJECT_NAME) bash
