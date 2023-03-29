@@ -26,6 +26,8 @@ up:
 		$(MAKE) composer;\
 	fi
 
+	$(MAKE) migrate_database
+
 stop: cleanup_sessions
 	@echo ""
 	@echo "${YELLOW}Stop all container${NOCOLOR}"
@@ -110,6 +112,7 @@ help:
 	@echo "  ${BGREEN}composer_require${YELLOW}             Run composer require [PACKAGE]"
 	@echo "  ${BGREEN}phpcs${YELLOW}                        Run phpcs"
 	@echo "  ${BGREEN}psalm${YELLOW}                        Run psalm"
+	@echo "  ${BGREEN}phpunit${YELLOW}                      Run phpunit"
 	@echo "  ${BGREEN}bash_php${YELLOW}                     Open bash in php container"
 	@echo "  ${BGREEN}bash_nginx${YELLOW}                   Open bash in nginx container"
 	@echo "  ${BGREEN}bash_mysql${YELLOW}                   Open bash in mysql container"
