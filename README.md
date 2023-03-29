@@ -96,7 +96,6 @@ Points you should look into:
 
 ### TODO ###
 - add purpose-bound Exception classes (in progress)
-- document config format
 - strip down php container, guess we don't need most extensions
 - move docker image name to env var
 - make servicecontainer selfcontained (instantiate everything in constructor)
