@@ -213,26 +213,6 @@ final class Session
         );
     }
 
-    // @todo: replace with migration
-    public static function createSessionTableIfNotExisting(ServiceContainer $serviceContainer): void
-    {
-        $tableExists = $serviceContainer->pdo->query(
-            "SELECT EXISTS (
-                    SELECT TABLE_NAME FROM information_schema.TABLES 
-                    WHERE TABLE_SCHEMA LIKE 'wrpdistributor' 
-                      AND TABLE_TYPE LIKE 'BASE TABLE' 
-                      AND TABLE_NAME = 'sessions'
-               )",
-        )->fetch();
-
-        if (0 === (int) $tableExists[0]) {
-            $serviceContainer->pdo->query(file_get_contents('db/sessions.sql'));
-            $serviceContainer->logger->info(
-                'Sessions table not found, created',
-            );
-        }
-    }
-
     // @todo: should be in statistics
     public function countAllSessions(): int
     {

@@ -89,23 +89,4 @@ final class Statistics
 
         return $statement->fetchAll();
     }
-
-    public static function createStatisticsTableIfNotExisting(ServiceContainer $serviceContainer): void
-    {
-        $tableExists = $serviceContainer->pdo->query(
-            "SELECT EXISTS (
-                    SELECT TABLE_NAME FROM information_schema.TABLES 
-                    WHERE TABLE_SCHEMA LIKE 'wrpdistributor' 
-                      AND TABLE_TYPE LIKE 'BASE TABLE' 
-                      AND TABLE_NAME = 'statistics'
-               )",
-        )->fetch();
-
-        if (0 === (int) $tableExists[0]) {
-            $serviceContainer->pdo->query(file_get_contents('db/statistics.sql'));
-            $serviceContainer->logger->info(
-                'Statistics table not found, created',
-            );
-        }
-    }
 }

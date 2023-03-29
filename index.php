@@ -11,9 +11,6 @@ use AmiDev\WrpDistributor\Actions\StopSession;
 use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
-use AmiDev\WrpDistributor\Statistics;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Logger as MonologLogger;
 
 // Init stuff
 $environmentVarsToLoad = [
@@ -46,8 +43,6 @@ try {
         $logger,
         $pdo,
     );
-
-    Statistics::createStatisticsTableIfNotExisting($serviceContainer);
 } catch (\Throwable $throwable) {
     $logger->error('Startup error: invalid container host configuration!');
 
@@ -71,7 +66,6 @@ $currentClientIp = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim($_SERVER['HTTP
 $currentClientUserAgent = trim($_SERVER['HTTP_USER_AGENT']);
 
 // Load session if it exists, else create a new one.
-Session::createSessionTableIfNotExisting($serviceContainer);
 try {
     $session = Session::loadFromDatabase($serviceContainer, $currentClientIp, $currentClientUserAgent);
 } catch (\Throwable $ex) {
