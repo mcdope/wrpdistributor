@@ -5,7 +5,7 @@ You can "control" `wrp_distributor` by sending HTTP requests.
 All requests:
 
 - MUST HAVE a `Bearer` header set with the correct authentication token for the instance.
-- CAN HAVE but SHOULDN'T HAVE a body, It's ignored anyway, so save the bytes
+- CAN HAVE but SHOULDN'T HAVE a body, with PUT being an exception to that rule
 - WILL RETURN 
 	- a statuscode of 200 in case of GET
 	- a statuscode of 202 for container start/stop actions (because of the delayed execution, exact delay between request and executions varies per config/install)
@@ -26,11 +26,11 @@ Session handling is done automagically by `wrp-distributor`.
 
 `wrp-distributor` manages client sessions based on IP-address (v6 supported, too) and user-agent. This is enforced with a unique database
 key using the ip and userAgent fields. You most likely want to add a small "random per installation" value to the user-agent to make sure 
-multiple users can use the distributor from the same IP address. You could derive it from the MAC, maybe in example. 
+multiple users can use the distributor from the same IP address. You could derive it from the MAC maybe, in example. 
 
-Else each user from that IP would share the same `wrp` container.
+If you don't do this each user from that IP would share the same `wrp` container.
 This would cause a heck of confusion with users, would be borderline useless — and very insecure.
-Yes, this is annoying, but that's the price to avoid logins and keep the codebase simple and easy to maintain.
+Yes, this is maybe annoying for as a client dev, but that's the price to avoid logins and keep the codebase simple and easy to maintain.
 
 Also: in case you modify `wrp-distributor` for your project make sure to adhere to the license - you MUST publish your modified sources even
 if you don't distribute them and use them only to provide a service. See LICENSE and README.md for details.
@@ -60,29 +60,30 @@ available in `./logs`.
 ### GET ###
 
 Prints a plain html status dashboard of the current instance. It shows the current sessions, containers and remaining containers.
+Mainly intended for local testing.
 
 #### Response ####
 | Property      | Value                 |
 |---------------|-----------------------|
-| Status        | 200                   |
+| Status        | 200, 503 on error     |
 | Content-Type: | text/html             |
 | Body:         | HTML with status info |
 
 ### HEAD ### 
 
 Simply upserts the session, which causes the lastUsed timestamp to be set to the current date and time. This prevents this session from
-being garbage collected / shutdown. Such a request should be sent at least once every 4 minutes.
+being garbage collected / shutdown. Such a request should be sent at least once every 9 minutes (when using the default timeout of 10 minutes).
 
 Recommendations: Monitor user activity,
 as long as the user continues scrolling the content or is filling some form issue periodically a 
 HEAD request to make sure the session doesn't get killed while the user is doing "work".
 
 #### Response ####
-| Property      | Value |
-|---------------|-------|
-| Status        | 204   |
-| Content-Type: | none  |
-| Body:         | none  |
+| Property      | Value             |
+|---------------|-------------------|
+| Status        | 204, 503 on error |
+| Content-Type: | none              |
+| Body:         | none              |
 
 ### PUT ###
 
@@ -97,11 +98,11 @@ You can include `ssl=true` in your request body to get a TLS secured `wrp`. The 
 
 
 #### Response ####
-| Property      | Value                                     |
-|---------------|-------------------------------------------|
-| Status        | 202 or 503, see above                     |
-| Content-Type: | text/xml or text/html                     |
-| Body:         | wrpInstanceUrl and token or error details |
+| Property      | Value                                                     |
+|---------------|-----------------------------------------------------------|
+| Status        | 202, 204 (if container already running) or 503, see above |
+| Content-Type: | text/xml or text/html                                     |
+| Body:         | wrpInstanceUrl and token or error details                 |
 
 ##### Body on 202 example ##### 
 `<xml><wrpUrl>somehost.tld:9999</wrpUrl><token>stringYouMustSetInBearerHeaderOnRequestsToWRP</token></xml>`
@@ -114,7 +115,7 @@ Considering the speed of modern servers and retro computers, this will likely be
 But no kind of "time for the container to be stopped" can be assumed! This shouldn't have any implications for implementation, I guess.
 In case there is no container running for the current session it will return 204 instead of 202 on success.
 
-Recommendations: issue this request "onNetworkShutdown", "onWindowClose" and similar.
+Recommendations: issue this request "onNetworkShutdown", "onWindowClose" and/or similar events.
 
 
 #### Response ####
