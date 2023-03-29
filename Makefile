@@ -88,7 +88,7 @@ statistics_dashboard_update:
 	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
 
 migrate_database:
-	docker-compose exec php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
+	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
 phpunit:
 	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/phpunit \
