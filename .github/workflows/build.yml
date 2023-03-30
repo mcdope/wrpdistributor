@@ -10,7 +10,6 @@ jobs:
   ci:
 
     runs-on: ubuntu-22.04
-    container: ubuntu
 
     steps:
       - uses: actions/checkout@v2
