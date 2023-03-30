@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update --fix-missing && apt-get upgrade -y
 
 # Install tools and requirements
-RUN apt-get -y --no-install-recommends install iputils-ping build-essential curl git openssh-client openssl unzip libsodium-dev libgmp-dev libxml2-dev libzip-dev
+RUN apt-get -y --no-install-recommends install build-essential curl git openssh-client openssl unzip libsodium-dev libgmp-dev libxml2-dev libzip-dev
 
 # Install xdebug
 RUN pecl install xdebug && \
