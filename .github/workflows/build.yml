@@ -13,6 +13,8 @@ jobs:
     container: ubuntu
 
     steps:
+      - name: Install make
+        run: apt update && apt install --yes make
       - uses: actions/checkout@v2
       - name: Build containers
         run: make build
