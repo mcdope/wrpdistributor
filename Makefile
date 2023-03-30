@@ -47,7 +47,7 @@ build:
 	docker-compose up --build -d
 
 composer:
-	docker-compose exec -it php_$(PROJECT_NAME) composer install
+	docker-compose exec -T php_$(PROJECT_NAME) composer install
 
 composer_require:
 	docker-compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
@@ -88,7 +88,7 @@ statistics_dashboard_update:
 	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
 
 migrate_database:
-	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
+	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
 phpunit-to-file:
 	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
