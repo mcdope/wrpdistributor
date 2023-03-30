@@ -462,9 +462,9 @@ final class DockerManager
     {
         // it should respect the host, but since we currently use different hostnames for the same host for testing that's not possible yet
         $query = "
-            SELECT IFNULL(s1.port, {$_ENV['START_PORT']})+1 AS nextPort
+            SELECT IFNULL(s1.port, " . (int) $_ENV['START_PORT'] -1 . ")+1 AS nextPort
             FROM      sessions AS s1
-            LEFT JOIN sessions AS s2 ON IFNULL(s1.port, {$_ENV['START_PORT']})+1 = s2.port
+            LEFT JOIN sessions AS s2 ON IFNULL(s1.port, " . (int) $_ENV['START_PORT'] -1 . ")+1 = s2.port
             WHERE s2.port IS NULL
             ORDER BY s1.port LIMIT 1
         ";
