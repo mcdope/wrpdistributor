@@ -101,4 +101,3 @@ Points you should look into:
 - make servicecontainer selfcontained (instantiate everything in constructor)
 - put cronjobs into docker container
 - extract loadbalancing into own service / strategy classes
-- "fix" findUnusedPort

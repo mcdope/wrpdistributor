@@ -452,8 +452,6 @@ final class DockerManager
     }
 
     /**
-     * @todo: actually this gets the next port, not the first unused. should also use lower ports then max-1 if still larger then start port
-     *
      * @noinspection PhpUnusedParameterInspection
      *
      * @psalm-suppress UnusedParam
@@ -462,13 +460,14 @@ final class DockerManager
      */
     private function findUnusedPort(string $containerHost): int
     {
-        /* // it should be this query, but since we use different hostnames for the same host currently for testing that's not possible yet
-        $query = sprintf(
-            "SELECT MAX(`port`)+1 as 'nextPort' FROM `sessions` WHERE containerHost = '%s'",
-            $containerHost
-        );
-        */
-        $query = "SELECT MAX(`port`)+1 as 'nextPort' FROM `sessions`";
+        // it should respect the host, but since we currently use different hostnames for the same host for testing that's not possible yet
+        $query = "
+            SELECT IFNULL(s1.port, {$_ENV['START_PORT']})+1 AS nextPort
+            FROM      sessions AS s1
+            LEFT JOIN sessions AS s2 ON IFNULL(s1.port, {$_ENV['START_PORT']})+1 = s2.port
+            WHERE s2.port IS NULL
+            ORDER BY s1.port LIMIT 1
+        ";
 
         if ($result = $this->serviceContainer->pdo->query($query)->fetch()) {
             if (empty($result['nextPort'])) {
