@@ -23,3 +23,7 @@ jobs:
         run: make psalm
       - name: phpunit
         run: make phpunit
+      - uses: actions/upload-artifact@v3
+        with:
+          name: phpunit-results-and-coverage
+          path: .tooling/phpunit/**
