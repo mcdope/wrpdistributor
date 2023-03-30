@@ -11,7 +11,7 @@ use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
 
-final class Logger
+class Logger
 {
     private LoggerInterface $logger;
 

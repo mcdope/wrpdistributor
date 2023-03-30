@@ -157,14 +157,14 @@ final class DockerManagerFunctionalTest extends BaseTestCase
     {
         $statementUpsert = $this->createMock(\PDOStatement::class);
         $statementUpsert
-            ->expects(self::once())
+            ->expects(self::exactly(2))
             ->method('execute')
             ->willReturn(true)
         ;
 
         $pdo = $this->createMock(\PDO::class);
         $pdo
-            ->expects(self::once())
+            ->expects(self::exactly(2))
             ->method('prepare')
             ->willReturn($statementUpsert)
         ;

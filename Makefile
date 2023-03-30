@@ -53,13 +53,13 @@ composer_require:
 	docker-compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
 
 psalm:
-	docker-compose exec -it php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 update_psalm_baseline:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml --update-baseline
 
 phpcs:
-	docker-compose exec -it php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
+	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
 phpcs-fix:
 	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer --allow-risky=yes --config=php-cs-fixer.dist.php fix src/ tests/ index.php bin/console
@@ -90,12 +90,17 @@ statistics_dashboard_update:
 migrate_database:
 	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate -n -v
 
-phpunit:
-	docker-compose exec -it php_$(PROJECT_NAME) ./vendor/bin/phpunit \
+phpunit-to-file:
+	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
 		--bootstrap vendor/autoload.php \
 		--coverage-html .tooling/phpunit/coverage \
 		--coverage-filter src \
 		--testdox-html .tooling/phpunit/testdox.html \
+		tests
+
+phpunit:
+	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
+		--bootstrap vendor/autoload.php \
 		tests
 
 help:
@@ -113,6 +118,7 @@ help:
 	@echo "  ${BGREEN}phpcs${YELLOW}                        Run phpcs"
 	@echo "  ${BGREEN}psalm${YELLOW}                        Run psalm"
 	@echo "  ${BGREEN}phpunit${YELLOW}                      Run phpunit"
+	@echo "  ${BGREEN}phpunit-to-file${YELLOW}              Run phpunit with coverage and output to .tooling"
 	@echo "  ${BGREEN}bash_php${YELLOW}                     Open bash in php container"
 	@echo "  ${BGREEN}bash_nginx${YELLOW}                   Open bash in nginx container"
 	@echo "  ${BGREEN}bash_mysql${YELLOW}                   Open bash in mysql container"

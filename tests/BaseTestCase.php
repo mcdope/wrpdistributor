@@ -9,7 +9,7 @@ use AmiDev\WrpDistributor\ServiceContainer;
 use Dotenv\Dotenv;
 use PHPUnit\Framework\TestCase;
 
-final class BaseTestCase extends TestCase
+class BaseTestCase extends TestCase
 {
     protected ServiceContainer $serviceContainer;
 
