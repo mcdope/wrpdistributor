@@ -17,6 +17,9 @@ $databaseName = $matches_db[1];
 preg_match('/host=(.+)$/', $_ENV['SESSION_DATABASE_DSN'],$matches_host);
 $databaseHost = $matches_host[1];
 
+echo 'DEBUG THIS SHIT!!!!';
+var_export($_ENV);
+
 return [
     'dbname' => $databaseName,
     'user' => $_ENV['SESSION_DATABASE_USER'],
