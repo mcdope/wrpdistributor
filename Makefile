@@ -73,6 +73,9 @@ bash_nginx:
 bash_mysql:
 	docker-compose exec mysql_$(PROJECT_NAME) bash
 
+mysql_logs:
+	docker-compose exec mysql_$(PROJECT_NAME) bash -c "cat /var/log/*"
+
 bash_sshd:
 	docker-compose exec sshd_testing_$(PROJECT_NAME) bash
 

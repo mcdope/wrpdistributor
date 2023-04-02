@@ -8,6 +8,9 @@ services:
 
   nginx_wrpdistributor:
     container_name: nginx_wrpdistributor
+    depends_on:
+      - mysql_wrpdistributor
+      - php_wrpdistributor
     image: nginx:latest
     ports:
       - "127.0.0.1:7777:80"
@@ -17,6 +20,8 @@ services:
       - ./nginx/logs:/var/log/nginx
 
   php_wrpdistributor:
+    depends_on:
+      - mysql_wrpdistributor
     container_name: php_wrpdistributor
     build: ./php
     working_dir: /var/www
