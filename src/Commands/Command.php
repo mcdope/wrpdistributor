@@ -13,7 +13,7 @@ use Dotenv\Exception\InvalidPathException;
 use Symfony\Component\Console\Command\Command as SymfonyConsoleCommand;
 use Symfony\Component\Console\Exception\LogicException;
 
-final class Command extends SymfonyConsoleCommand
+class Command extends SymfonyConsoleCommand
 {
     protected ServiceContainer $serviceContainer;
 
