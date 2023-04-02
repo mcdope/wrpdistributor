@@ -25,6 +25,8 @@ services:
     working_dir: /var/www
     volumes:
       - ../:/var/www
+    links:
+      - mysql_wrpdistributor
 
   mysql_wrpdistributor:
     build: ./mysql

@@ -26,7 +26,7 @@ up:
 		$(MAKE) composer;\
 	fi
 
-	$(MAKE) migrate_database
+	# $(MAKE) migrate_database
 
 stop: cleanup_sessions
 	@echo ""
