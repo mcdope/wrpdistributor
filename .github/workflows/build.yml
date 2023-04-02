@@ -20,7 +20,7 @@ jobs:
       - name: Create .env
         run: echo -e "MAX_CONTAINERS_RUNNING=15,15\nCONTAINER_HOSTS=localhost,127.0.0.1\nCONTAINER_HOSTS_KEYS=wrp~id_localhost,wrp~id_localhost2~testTest\nCONTAINER_DISTRIBUTION_METHOD=equal\nCONTAINER_HOSTS_TLS_CERTS=/dev/null~/dev/null,/dev/null~/dev/null\nSESSION_DATABASE_DSN=mysql:dbname=wrpdistributor;host=mysql_wrpdistributor\nSESSION_DATABASE_USER=wrpdistributor\nSESSION_DATABASE_PASS=wrpdistributor\nSTART_PORT=9090\nAUTH_TOKEN=tokenForTesting" > .env && cp .env .env.test
       - name: Migrate DB
-        run: make migrate_database
+        run: docker ps && make migrate_database
       - name: phpcs
         run: make phpcs
       - name: psalm
