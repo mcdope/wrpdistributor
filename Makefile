@@ -55,8 +55,11 @@ composer_require:
 psalm:
 	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
+create_psalm_baseline:
+	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --set-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+
 update_psalm_baseline:
-	docker-compose exec php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml --update-baseline
+	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --update-baseline --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 phpcs:
 	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console

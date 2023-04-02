@@ -25,7 +25,4 @@ $return = [
     'driver' => 'pdo_mysql',
 ];
 
-echo 'DEBUG THIS SHIT!!!!';
-var_export($return);
-
 return $return;

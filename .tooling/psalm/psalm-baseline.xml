@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.7.7@e028ba46ba0d7f9a78bc3201c251e137383e145f">
+<files psalm-version="5.8.0@9cf4f60a333f779ad3bc704a555920e81d4fdcda">
   <file src="index.php">
     <PossiblyUndefinedArrayOffset>
       <code><![CDATA[$_SERVER['HTTP_USER_AGENT']]]></code>
@@ -21,28 +21,14 @@
     </PossiblyUndefinedStringArrayOffset>
   </file>
   <file src="src/DockerManager.php">
-    <PossiblyUndefinedArrayOffset>
-      <code><![CDATA[$determinedContainerHost['host']]]></code>
-    </PossiblyUndefinedArrayOffset>
     <PossiblyUndefinedIntArrayOffset>
-      <code><![CDATA[$this->containerHosts[$hostIndex]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[
-            array_search($containerHost, $this->containerHosts, true)
-        ]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
@@ -53,18 +39,20 @@
       <code><![CDATA[$this->privateKeys[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->tlsCertificates[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->tlsCertificates[$indexOfFirstUnusedContainerHost]]]></code>
+      <code><![CDATA[$this->tlsCertificates[$indexOfSelectedHost]]]></code>
+      <code><![CDATA[$this->tlsCertificates[$indexOfSelectedHost]]]></code>
     </PossiblyUndefinedIntArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
       <code><![CDATA[$_ENV['CONTAINER_HOSTS']]]></code>
       <code><![CDATA[$_ENV['CONTAINER_HOSTS_KEYS']]]></code>
+      <code><![CDATA[$_ENV['CONTAINER_HOSTS_TLS_CERTS']]]></code>
       <code><![CDATA[$_ENV['MAX_CONTAINERS_RUNNING']]]></code>
       <code><![CDATA[$_ENV['START_PORT']]]></code>
-      <code><![CDATA[$_ENV['START_PORT']]]></code>
+      <code><![CDATA[$determinedContainerHost['cert']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
-      <code><![CDATA[$determinedContainerHost['host']]]></code>
-      <code><![CDATA[$determinedContainerHost['maxContainers']]]></code>
-      <code><![CDATA[$determinedContainerHost['privateKey']]]></code>
       <code><![CDATA[$determinedContainerHost['privateKey']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>

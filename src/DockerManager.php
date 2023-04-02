@@ -256,67 +256,6 @@ final class DockerManager
     }
 
     /**
-     * @throws \RuntimeException
-     */
-    public function getWrpLog(Session $session): void
-    {
-        if (null === $session->id || null === $session->wrpContainerId) {
-            return; // mainly for psalm, this method will only be called on sessions with container
-        }
-
-        $hostIndex = array_search($session->containerHost, $this->containerHosts, true);
-
-        if (isset($this->privateKeys[$hostIndex][2])) {
-            $key = PublicKeyLoader::load(
-                file_get_contents('ssh/' . $this->privateKeys[$hostIndex][1]),
-                $this->privateKeys[$hostIndex][2],
-            );
-        } else {
-            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $this->privateKeys[$hostIndex][1]));
-        }
-
-        $ssh = new SSH2($session->containerHost);
-        if (!$ssh->login($this->privateKeys[$hostIndex][0], $key)) {
-            $this->serviceContainer->logger->error('getWrpLog() failed to SSH into the containerHost');
-
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
-
-        $getLogCommand = sprintf(
-            'docker exec %s cat /tmp/wrp.log',
-            $session->wrpContainerId,
-        );
-
-        if (!$ssh->exec(
-            $getLogCommand,
-            function (string $shellOutput) use ($session): void {
-                $this->serviceContainer->logger->info(
-                    'getWrpLog() successfully got container log',
-                    ['containerId' => $session->wrpContainerId],
-                );
-
-                file_put_contents(
-                    sprintf(
-                        'logs/session_%d_containerId_%s_wrp.log',
-                        $session->id,
-                        $session->wrpContainerId,
-                    ),
-                    $shellOutput,
-                );
-            },
-        )) {
-            $this->serviceContainer->logger->warning(
-                'getWrpLog() failed to get log',
-                ['containerId' => $session->wrpContainerId],
-            );
-
-            throw new \RuntimeException(
-                "Can't send command to get container log on determined host! Temporary network issue maybe?",
-            );
-        }
-    }
-
-    /**
      * @throws \LogicException
      * @throws \RuntimeException
      */
@@ -462,9 +401,9 @@ final class DockerManager
     {
         // it should respect the host, but since we currently use different hostnames for the same host for testing that's not possible yet
         $query = "
-            SELECT IFNULL(s1.port, " . (int) $_ENV['START_PORT'] -1 . ")+1 AS nextPort
+            SELECT IFNULL(s1.port, " . (string) ((int) $_ENV['START_PORT'] - 1) . ")+1 AS nextPort
             FROM      sessions AS s1
-            LEFT JOIN sessions AS s2 ON IFNULL(s1.port, " . (int) $_ENV['START_PORT'] -1 . ")+1 = s2.port
+            LEFT JOIN sessions AS s2 ON IFNULL(s1.port, " . (string) ((int) $_ENV['START_PORT'] - 1) . ")+1 = s2.port
             WHERE s2.port IS NULL
             ORDER BY s1.port LIMIT 1
         ";
