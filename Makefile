@@ -42,6 +42,12 @@ destroy:
 
 build:
 	@echo ""
+	@echo "${YELLOW}Create directories${NOCOLOR}"
+	@echo ""
+	mkdir -p docker/mysql/data
+	mkdir -p docker/nginx/logs
+	chmod -R 0777 docker/mysql/data docker/nginx/logs
+	@echo ""
 	@echo "${YELLOW}Build all container${NOCOLOR}"
 	@echo ""
 	docker-compose up --build -d
@@ -75,9 +81,6 @@ bash_nginx:
 
 bash_mysql:
 	docker-compose exec mysql_$(PROJECT_NAME) bash
-
-mysql_logs:
-	docker-compose exec -T mysql_$(PROJECT_NAME) bash -c "cat /var/log/*"
 
 bash_sshd:
 	docker-compose exec sshd_testing_$(PROJECT_NAME) bash
