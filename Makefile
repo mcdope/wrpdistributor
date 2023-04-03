@@ -46,7 +46,7 @@ build:
 	@echo ""
 	mkdir -p docker/mysql/data
 	mkdir -p docker/nginx/logs
-	chmod -R 0777 docker/mysql/data docker/nginx/logs
+	sudo chmod -R 0777 docker/mysql/data docker/nginx/logs
 	@echo ""
 	@echo "${YELLOW}Build all container${NOCOLOR}"
 	@echo ""
