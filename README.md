@@ -95,8 +95,5 @@ Points you should look into:
 - allow login only from the expected ingress IP (= your `wrp-distributor` host)
 
 ### TODO ###
-- add purpose-bound Exception classes (in progress)
-- move docker image name to env var
-- make servicecontainer selfcontained (instantiate everything in constructor)
-- put cronjobs into docker container
+- add purpose-bound Exception classes (started, but boring :D)
 - extract loadbalancing into own service / strategy classes

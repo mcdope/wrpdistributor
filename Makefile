@@ -26,9 +26,7 @@ up:
 		$(MAKE) composer;\
 	fi
 
-	# $(MAKE) migrate_database
-
-stop: cleanup_sessions
+stop:
 	@echo ""
 	@echo "${YELLOW}Stop all container${NOCOLOR}"
 	@echo ""
