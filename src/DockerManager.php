@@ -201,7 +201,6 @@ final class DockerManager
         $this->serviceContainer->logger->debug(
             'Container start command generated',
             [
-                'command' => $containerStartCommand,
                 'sessionId' => $session->id,
                 'port' => $nextFreePort,
                 'containerHost' => $session->containerHost,
