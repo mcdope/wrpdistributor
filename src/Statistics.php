@@ -29,14 +29,14 @@ final class Statistics
 
     public function insert(array $dataPoint): void
     {
-        $statement = $this->serviceContainer->pdo->prepare(
-            'INSERT INTO `statistics` (
-                         activeSessions, containersRunningTotal, remainingContainersTotal, 
-                         containerHostsAvailable, containersInUsePerHost
-                   ) VALUES (
-                         :activeSessions, :containersRunning, :remainingContainers, :containerHosts, :containerHostsWithSessions
-                   )',
-        );
+        $statement = $this->serviceContainer->pdo->prepare('
+            INSERT INTO `statistics` (
+                 activeSessions, containersRunningTotal, remainingContainersTotal,
+                 containerHostsAvailable, containersInUsePerHost
+           ) VALUES (
+                 :activeSessions, :containersRunning, :remainingContainers, :containerHosts, :containerHostsWithSessions
+           )
+        ');
 
         $statement->execute($dataPoint);
     }

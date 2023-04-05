@@ -231,7 +231,7 @@ final class Session
             (int) $this->id,
             $this->clientIp,
             $this->clientUserAgent,
-            bin2hex(random_bytes(2048)),
+            bin2hex(random_bytes(8192)),
         );
 
         return sha1($tokenSourceString);

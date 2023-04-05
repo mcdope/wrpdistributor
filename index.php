@@ -12,7 +12,6 @@ use AmiDev\WrpDistributor\Logger;
 use AmiDev\WrpDistributor\ServiceContainer;
 use AmiDev\WrpDistributor\Session;
 
-// Init stuff
 $environmentVarsToLoad = [
     'MAX_CONTAINERS_RUNNING',
     'CONTAINER_HOSTS',
@@ -73,7 +72,6 @@ try {
     $session->upsert();
 }
 
-// Do the actual HTTP handling by using an action map
 /** @var ActionInterface[] $actionMap */
 $actionMap = [
     'DELETE' => new StopSession($serviceContainer),

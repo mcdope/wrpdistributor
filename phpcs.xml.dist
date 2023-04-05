@@ -11,6 +11,7 @@
     <rule ref="PSR2"/>
 
     <file>src/</file>
+    <file>tests/</file>
     <file>index.php</file>
     <file>bin/console</file>
 
