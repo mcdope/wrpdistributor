@@ -16,7 +16,7 @@ Note that this DOESN'T apply to `AmiFox` (the reference/main implementation) its
 
 ### How do I set it up? ###
 
-#### The easy way ####
+#### The easy way (docker-compose) ####
 Download the repository, open a shell and change to the repository. Now...
 - run `cp .env.dist .env`
 - edit `.env` and set your parameters
@@ -28,7 +28,6 @@ Download the repository, open a shell and change to the repository. Now...
        - `AUTH_TOKEN`
        - ... and maybe `START_PORT` and `CONTAINER_DISTRIBUTION_METHOD`
 - run `make build` to create the docker container
-- run `make up`, it will start the container and provide `wrp-distributor` on the public port `7777`
 - actually set up at least one containerHost
     - configure the server of your choice (as long as it's Linux 😅) with Docker
     - add a user dedicated to run the containers, add it to the group `docker` to allow it to manage containers
@@ -50,7 +49,10 @@ Download the repository, open a shell and change to the repository. Now...
     - `equal` - will distribute containers equally over all hosts. To use this all hosts should have the same value set in `MAX_CONTAINERS_RUNNING`, everything else is untested
         - if all hosts currently run the same number of containers, the next one will be chosen randomly
     - `fillhost` - will fill the first host, then use the next and so on (the default)
+- run `make up`, it will start the container and provide `wrp-distributor` on the public port `7777`
 - In case you're running this in a production setup: provide a reverse proxy to expose `wrp-distributor` via your default webserver. Make sure you don't leak sensitive data like SSH keys etc.
+
+This docker-compose based way of setting up will also take care of running the crons for you.
 
 #### The hard way ####
 
@@ -61,19 +63,16 @@ You will need MySQL 8, PHP8.2 and composer on your server to run this.
 - run `cp .env.dist .env`
 - run `composer install` to install the dependencies
 - create a database and database user for `wrp-distributor` and adjust `.env` accordingly
-    - required tables will be auto-created if missing, don't worry about it
 - adjust remaining parameters in `.env` according to your needs
 - continue with "actually set up at least one containerHost" from [The easy way](README.md#the-easy-way-)
-
-#### Stuff you need to figure out yourself ####
+- run `make migrate_database`. This will init the db (and also apply upgrades in case it exists)
 
 You should clean up unused sessions sometimes. For this there is a cli command provided - `./bin/console cleanup:sessions`.
 It checks every session for age and will shut down the container (if there is one) and delete the session afterward.
 Optionally you can specify the timeout for sessions in minutes as an argument, the default is 10, so every session
 not used for at least 10 minutes will be terminated by default.
 
-If you're running `wrp-distributor` via Docker you can just invoke `make cleanup_session` instead. If you
-run a self-configured setup, you need to figure it out on your own.
+There is `bin/crons.sh` which runs all cron jobs for you, including the statistic ones.
 
 ### How do I use it? 
 

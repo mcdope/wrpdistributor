@@ -30,7 +30,7 @@ multiple users can use the distributor from the same IP address. You could deriv
 
 If you don't do this each user from that IP would share the same `wrp` container.
 This would cause a heck of confusion with users, would be borderline useless — and very insecure.
-Yes, this is maybe annoying for as a client dev, but that's the price to avoid logins and keep the codebase simple and easy to maintain.
+Yes, this is maybe annoying for as a client dev, but that's the price to keep it small.
 
 Also: in case you modify `wrp-distributor` for your project make sure to adhere to the license - you MUST publish your modified sources even
 if you don't distribute them and use them only to provide a service. See LICENSE and README.md for details.
@@ -90,7 +90,7 @@ HEAD request to make sure the session doesn't get killed while the user is doing
 Will check for next available free port and start a `wrp` container on it for the current session. The request will respond asap, but
 starting the actual container can take some time. Considering the speed of modern servers and retro computers, this will likely be 
 faster than your app reacting to the response. But no kind of "time for the container to be active" can be assumed! You MUST check 
-yourself if the instance is already available. To control the WRP instance you MUST send the value of `token` in the `Bearer` header
+yourself if the instance is already available. To control the WRP instance you MUST send the value of the `token` element in the response in the `Bearer` header
 in each request to WRP, else it will return `401`.
 
 You can include `ssl=true` in your request body to get a TLS secured `wrp`. The default is to not use TLS.
