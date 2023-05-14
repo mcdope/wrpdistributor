@@ -11,12 +11,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class DashboardUpdate extends Command
 {
-    private const DASHBOARD_TEMPLATE = <<<TPL
+    private const DASHBOARD_TEMPLATE = /** @lang HTML */
+        <<<TPL
 <!DOCTYPE html>
 <html lang="en">
   <head>
         <meta charset="utf-8">
-        <title>AmiFox Distributor Dashboard</title>
+        <title>AmiFox Distributor Dashboard - Clients total: %sessionsAlltime%</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
         
         <style type="text/css">
@@ -46,6 +47,10 @@ final class DashboardUpdate extends Command
             .canvas-wide {
                 width: 65%!important;
             }
+            
+            div#global-stats {
+                float: right;
+            }
         </style>
   </head>
   <body>
@@ -53,13 +58,13 @@ final class DashboardUpdate extends Command
             <tr>
                 <td>
                     <div id="containersPerHostContainer" class="chart">
-                        <h3>Containers per Host</h3>
+                        <h3>Containers per Host (now -7 days)</h3>
                         <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
                     </div>
                 </td>
                 <td>
                     <div id="containersRemainingContainer" class="chart">
-                        <h3>Container usage</h3>
+                        <h3>Container usage total (<abbr title="Currently configured maximum container count over all hosts">of %maxContainers%</abbr>)</h3>
                         <canvas id="containersRemainingCanvas"></canvas>
                     </div>
                 </td>
@@ -67,13 +72,13 @@ final class DashboardUpdate extends Command
             <tr>
                 <td>
                     <div id="sessionTotalsContainer" class="chart">
-                        <h3>Sessions &amp; containers total</h3>
+                        <h3>Sessions &amp; containers total (now -7 days)</h3>
                         <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
                     </div>
                 </td>
                 <td>
                     <div id="activeSessionsContainer" class="chart">
-                        <h3>Active sessions right now</h3>
+                        <h3>Currently active sessions</h3>
                         <canvas id="activeSessionsCanvas"></canvas>
                     </div>
                 </td>
@@ -93,6 +98,8 @@ final class DashboardUpdate extends Command
               const totalSessions = %totalSessions%;
               const totalContainers = %totalContainers%;
               const maxContainers = %maxContainers%;
+              const sessionsAlltime = %sessionsAlltime%;
+              const containersMaxConcurrent = %containersMaxConcurrent%;
               
               // slot 1, top left
               const slot1 = new Chart(containersPerHost, {
@@ -123,16 +130,18 @@ final class DashboardUpdate extends Command
               new Chart(containersRemaining, {
                   type: 'pie',
                   data: {
-                      labels: ['Remaining', 'In use'],
+                      labels: ['Never used / scaling reserve', 'Currently in use', 'Max concurrent containers so far'],
                       datasets: [
                             {
                                   data: [
-                                      (maxContainers-totalContainers), 
-                                      totalContainers
+                                      (maxContainers-totalContainers-containersMaxConcurrent), 
+                                      totalContainers,
+                                      containersMaxConcurrent
                                   ],
                                   backgroundColor: [
                                       'rgb(0, 255, 0)',
-                                      'rgb(255, 255, 0)'
+                                      'rgb(255, 255, 0)',
+                                      'rgb(255, 165, 0)',
                                   ]
                             }
                       ]
@@ -174,37 +183,40 @@ final class DashboardUpdate extends Command
               slot3.update()
               
               // slot 4, bottom right
-              new Chart(activeSessions, {
-                  type: 'pie',
-                  data: {
-                      labels: ['No container', 'With container'],
-                      datasets: [
-                            {
-                                  data: [
-                                      (totalSessions-totalContainers), 
-                                      totalContainers
-                                  ],
-                                  backgroundColor: [
-                                      'rgb(255, 255, 0)',
-                                      'rgb(0, 255, 0)'
-                                  ]
+              if ((totalSessions-totalContainers) || totalContainers) {
+                  new Chart(activeSessions, {
+                      type: 'pie',
+                      data: {
+                          labels: ['No container', 'With container'],
+                          datasets: [
+                                {
+                                      data: [
+                                          (totalSessions-totalContainers), 
+                                          totalContainers
+                                      ],
+                                      backgroundColor: [
+                                          'rgb(255, 255, 0)',
+                                          'rgb(0, 255, 0)'
+                                      ]
+                                }
+                          ]
+                      },
+                      options: {
+                            responsive: false,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                      position: 'bottom',
+                                },
                             }
-                      ]
-                  },
-                  options: {
-                        responsive: false,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                  position: 'bottom',
-                            },
-                        }
-                  },
-              });
+                      },
+                  });
+              } else {
+                  document.querySelector('div#activeSessionsContainer').style.display = 'none'
+              }
         </script>
   </body>
 </html>
-
 TPL;
 
     private function getLineChartDatasetTemplate(): array
@@ -229,7 +241,7 @@ TPL;
     private function createContainersPerHostChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-2 days'));
+        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-7 days'));
         foreach ($dataPoints as $hostAndCountPerPoint) {
             $labels[] = '';
             foreach ($hostAndCountPerPoint as $containersByHost) {
@@ -268,7 +280,7 @@ TPL;
     private function createTotalsChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-2 days'));
+        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-7 days'));
         foreach ($dataPoints as $dataPoint) {
             $labels[] = '';
             foreach ($dataPoint as $valueName => $singleValue) {
@@ -339,6 +351,8 @@ TPL;
                     '%maxContainers%',
                     '%totalLabels%',
                     '%totalDatasets%',
+                    '%sessionsAlltime%',
+                    '%containersMaxConcurrent%',
                 ],
                 [
                     $jsContainersPerHostLabels,
@@ -348,6 +362,8 @@ TPL;
                     $this->serviceContainer->dockerManager->countTotalMaxContainers(),
                     $jsTotalLabels,
                     $jsTotalDatasets,
+                    $this->serviceContainer->statistics->getTotalSessionsServed(),
+                    $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
                 ],
                 self::DASHBOARD_TEMPLATE,
             );

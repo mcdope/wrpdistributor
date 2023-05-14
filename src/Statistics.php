@@ -60,7 +60,10 @@ final class Statistics
 
         $returnValue = [];
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $dataPoint) {
-            $containersPerHost = unserialize($dataPoint['containersInUsePerHost'], []);
+            $containersPerHost = @unserialize($dataPoint['containersInUsePerHost'], []);
+            if (!is_array($containersPerHost)) {
+                continue;
+            }
 
             foreach ($containersPerHost as $host => $containerCount) {
                 $returnValue[$dataPoint['timeOfCapture']][] = [$host => $containerCount];
@@ -88,5 +91,25 @@ final class Statistics
         $statement->execute(['from' => $from->format('c'), 'till' => $till->format('c')]);
 
         return $statement->fetchAll();
+    }
+
+    public function getTotalSessionsServed(): int
+    {
+        $statement = $this->serviceContainer->pdo->prepare("
+            SELECT (AUTO_INCREMENT - 1) FROM information_schema.tables 
+            WHERE table_name = 'sessions' 
+              AND table_schema = DATABASE()
+        ");
+
+        $statement->execute([]);
+
+        return (int) $statement->fetchColumn(0);
+    }
+    public function getMaxConcurrentContainersServed(): int
+    {
+        $statement = $this->serviceContainer->pdo->prepare("SELECT MAX(containersRunningTotal) FROM statistics");
+        $statement->execute([]);
+
+        return (int) $statement->fetchColumn(0);
     }
 }
