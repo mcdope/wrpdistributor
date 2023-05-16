@@ -168,6 +168,13 @@ final class DashboardUpdate extends Command
                                     ticks: {
                                        stepSize: 1
                                     }
+                                },
+                                x: {
+                                    ticks: {
+                                        autoSkip: true,
+                                        maxRotation: 90,
+                                        minRotation: 90
+                                    }
                                 }
                           }
                     }
@@ -297,7 +304,7 @@ TPL;
         $labels = $datasets = [];
         $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-'.(string) self::DAYS_TO_SHOW.' days'));
         foreach ($dataPoints as $dataPoint) {
-            $labels[] = '';
+            $labels[] = (new \DateTime($dataPoint['timeOfCapture']))->format('H:i');
             foreach ($dataPoint as $valueName => $singleValue) {
                 if (is_numeric($valueName) || 'timeOfCapture' === $valueName || 'Remaining containers' === $valueName) {
                     continue;
