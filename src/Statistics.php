@@ -54,6 +54,7 @@ final class Statistics
         $statement = $this->serviceContainer->pdo->prepare('
             SELECT timeOfCapture, containersInUsePerHost 
             FROM `statistics` WHERE timeOfCapture >= :from AND timeOfCapture <= :till
+            ORDER BY timeOfCapture ASC
         ');
 
         $statement->execute(['from' => $from->format('c'), 'till' => $till->format('c')]);
@@ -86,6 +87,7 @@ final class Statistics
         $statement = $this->serviceContainer->pdo->prepare('
             SELECT timeOfCapture, activeSessions as \'Active sessions\', containersRunningTotal as \'Active containers\', remainingContainersTotal as \'Remaining containers\' 
             FROM `statistics` WHERE timeOfCapture >= :from AND timeOfCapture <= :till
+            ORDER BY timeOfCapture
         ');
 
         $statement->execute(['from' => $from->format('c'), 'till' => $till->format('c')]);

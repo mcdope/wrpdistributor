@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class DashboardUpdate extends Command
 {
+    private const DAYS_TO_SHOW = 1;
+
     private const DASHBOARD_TEMPLATE = /** @lang HTML */
         <<<TPL
 <!DOCTYPE html>
@@ -19,71 +21,57 @@ final class DashboardUpdate extends Command
         <meta charset="utf-8">
         <title>AmiFox Distributor Dashboard - Clients total: %sessionsAlltime%</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" 
+              rel="stylesheet" 
+              integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" 
+              crossorigin="anonymous"
+        >
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" 
+                integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" 
+                crossorigin="anonymous"
+        ></script>
         
         <style type="text/css">
-            table {
-                width: 100%;
-                height: 100%;
-                border: none;
-            }
-            
-            tr {
-                height: 49%;
-            }
-            
-            tr > td:first-of-type {
-                width: 80%;
-            }
-            
-            td {
-                vertical-align: top;
-            }
-            
-            td > div {
-                vertical-align: center;
-                text-align: center;
-            }
-            
-            .canvas-wide {
-                width: 65%!important;
-            }
-            
-            div#global-stats {
-                float: right;
-            }
+        canvas {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        
+        div.chart {
+          padding: 1px;
+        }
         </style>
   </head>
   <body>
-        <table>
-            <tr>
-                <td>
-                    <div id="containersPerHostContainer" class="chart">
-                        <h3>Containers per Host (now -7 days)</h3>
-                        <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
-                    </div>
-                </td>
-                <td>
-                    <div id="containersRemainingContainer" class="chart">
-                        <h3>Container usage total (<abbr title="Currently configured maximum container count over all hosts">of %maxContainers%</abbr>)</h3>
-                        <canvas id="containersRemainingCanvas"></canvas>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div id="sessionTotalsContainer" class="chart">
-                        <h3>Sessions &amp; containers total (now -7 days)</h3>
-                        <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
-                    </div>
-                </td>
-                <td>
-                    <div id="activeSessionsContainer" class="chart">
-                        <h3>Currently active sessions</h3>
-                        <canvas id="activeSessionsCanvas"></canvas>
-                    </div>
-                </td>
-            </tr>
-        </table>
+        <div class="row mb-3 text-center">
+            <div class="col-md-8 themed-grid-col">
+                <div id="containersPerHostContainer" class="chart">
+                    <h3>Containers per Host (now -%daysToShow% days)</h3>
+                    <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4 themed-grid-col">
+                <div id="containersRemainingContainer" class="chart">
+                    <h3>Container usage total (<abbr title="Currently configured maximum container count over all hosts">of %maxContainers%</abbr>)</h3>
+                    <canvas id="containersRemainingCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col-md-8 themed-grid-col">
+                <div id="sessionTotalsContainer" class="chart">
+                    <h3>Sessions &amp; containers total (now -%daysToShow% days)</h3>
+                    <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4 themed-grid-col">
+                <div id="activeSessionsContainer" class="chart">
+                    <h3>Currently active sessions</h3>
+                    <canvas id="activeSessionsCanvas"></canvas>
+                </div>
+            </div>
+        </div>
         
         <script>
               const containersPerHost = document.getElementById('containersPerHostCanvas');
@@ -109,8 +97,8 @@ final class DashboardUpdate extends Command
                           datasets: containersPerHostDatasets
                     },
                     options: {
-                          responsive: false,
-                          maintainAspectRatio: false,
+                          responsive: true,
+                          maintainAspectRatio: true,
                           scales: {
                                 y: {
                                     beginAtZero: true,
@@ -118,11 +106,18 @@ final class DashboardUpdate extends Command
                                        stepSize: 1
                                     }
                                 },
+                                x: {
+                                    ticks: {
+                                        autoSkip: true,
+                                        maxRotation: 90,
+                                        minRotation: 90
+                                    }
+                                }
                           }
                     }
               });
               slot1.options.plugins.decimation.algorithm = 'min-max';
-              slot1.options.plugins.decimation.enabled = true;
+              slot1.options.plugins.decimation.enabled = false;
               slot1.options.plugins.decimation.samples = 500;
               slot1.update()
               
@@ -134,7 +129,7 @@ final class DashboardUpdate extends Command
                       datasets: [
                             {
                                   data: [
-                                      (maxContainers-totalContainers-containersMaxConcurrent), 
+                                      (maxContainers-(totalContainers > containersMaxConcurrent ? totalContainers : 0)-containersMaxConcurrent), 
                                       totalContainers,
                                       containersMaxConcurrent
                                   ],
@@ -147,8 +142,8 @@ final class DashboardUpdate extends Command
                       ]
                   },
                   options: {
-                        responsive: false,
-                        maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: true,
                         plugins: {
                             legend: {
                                   position: 'bottom',
@@ -165,8 +160,8 @@ final class DashboardUpdate extends Command
                           datasets: totalDatasets
                     },
                     options: {
-                          responsive: false,
-                          maintainAspectRatio: false,
+                          responsive: true,
+                          maintainAspectRatio: true,
                           scales: {
                                 y: {
                                     beginAtZero: true,
@@ -178,7 +173,7 @@ final class DashboardUpdate extends Command
                     }
               });
               slot3.options.plugins.decimation.algorithm = 'min-max';
-              slot3.options.plugins.decimation.enabled = true;
+              slot3.options.plugins.decimation.enabled = false;
               slot3.options.plugins.decimation.samples = 500;
               slot3.update()
               
@@ -202,8 +197,8 @@ final class DashboardUpdate extends Command
                           ]
                       },
                       options: {
-                            responsive: false,
-                            maintainAspectRatio: false,
+                            responsive: true,
+                            maintainAspectRatio: true,
                             plugins: {
                                 legend: {
                                       position: 'bottom',
@@ -214,6 +209,25 @@ final class DashboardUpdate extends Command
               } else {
                   document.querySelector('div#activeSessionsContainer').style.display = 'none'
               }
+              
+              let reloadInterval = null;
+              function enableAutoReload() {
+                  reloadInterval = setInterval(
+                           function() { 
+                                window.location=window.location;
+                           },
+                           30000
+                   );
+              }
+              
+              enableAutoReload();
+              document.addEventListener("visibilitychange", function() {
+                   if (document.hidden){
+                       clearInterval(reloadInterval);
+                   } else {
+                       enableAutoReload();
+                   }
+              });
         </script>
   </body>
 </html>
@@ -241,9 +255,10 @@ TPL;
     private function createContainersPerHostChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-7 days'));
-        foreach ($dataPoints as $hostAndCountPerPoint) {
-            $labels[] = '';
+        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-'.(string) self::DAYS_TO_SHOW.' days'));
+        foreach ($dataPoints as $timeOfCapture => $hostAndCountPerPoint) {
+            $labels[] = (new \DateTime($timeOfCapture))->format('H:i');
+
             foreach ($hostAndCountPerPoint as $containersByHost) {
                 foreach ($containersByHost as $host => $containerCount) {
                     if (!array_key_exists($host, $datasets)) {
@@ -280,7 +295,7 @@ TPL;
     private function createTotalsChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-7 days'));
+        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-'.(string) self::DAYS_TO_SHOW.' days'));
         foreach ($dataPoints as $dataPoint) {
             $labels[] = '';
             foreach ($dataPoint as $valueName => $singleValue) {
@@ -353,6 +368,7 @@ TPL;
                     '%totalDatasets%',
                     '%sessionsAlltime%',
                     '%containersMaxConcurrent%',
+                    '%daysToShow%',
                 ],
                 [
                     $jsContainersPerHostLabels,
@@ -364,6 +380,7 @@ TPL;
                     $jsTotalDatasets,
                     $this->serviceContainer->statistics->getTotalSessionsServed(),
                     $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
+                    self::DAYS_TO_SHOW,
                 ],
                 self::DASHBOARD_TEMPLATE,
             );
