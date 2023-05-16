@@ -17,7 +17,7 @@ final class DashboardUpdate extends Command
         <<<TPL
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+    <head>
         <meta charset="utf-8">
         <title>AmiFox Distributor Dashboard - Clients total: %sessionsAlltime%</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
@@ -31,23 +31,23 @@ final class DashboardUpdate extends Command
                 crossorigin="anonymous"
         ></script>
         
-        <style type="text/css">
-        canvas {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-        
-        div.chart {
-          padding: 1px;
-        }
+        <style>
+            canvas {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+            
+            div.chart {
+                padding: 1px;
+            }
         </style>
-  </head>
-  <body>
+    </head>
+    <body>
         <div class="row mb-3 text-center">
             <div class="col-md-8 themed-grid-col">
                 <div id="containersPerHostContainer" class="chart">
-                    <h3>Containers per Host (now -%daysToShow% days)</h3>
+                    <h3>Containers per host (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                     <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
@@ -61,7 +61,7 @@ final class DashboardUpdate extends Command
         <div class="row mb-3 text-center">
             <div class="col-md-8 themed-grid-col">
                 <div id="sessionTotalsContainer" class="chart">
-                    <h3>Sessions &amp; containers total (now -%daysToShow% days)</h3>
+                    <h3>Sessions &amp; containers total (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                     <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
@@ -74,169 +74,169 @@ final class DashboardUpdate extends Command
         </div>
         
         <script>
-              const containersPerHost = document.getElementById('containersPerHostCanvas');
-              const containersRemaining = document.getElementById('containersRemainingCanvas');
-              const sessionTotals = document.getElementById('sessionTotalsCanvas');
-              const activeSessions = document.getElementById('activeSessionsCanvas');
-              
-              const containersPerHostLabels = %containersPerHostLabels%;
-              const containersPerHostDatasets = %containersPerHostDatasets%;
-              const totalLabels = %totalLabels%;
-              const totalDatasets = %totalDatasets%;
-              const totalSessions = %totalSessions%;
-              const totalContainers = %totalContainers%;
-              const maxContainers = %maxContainers%;
-              const sessionsAlltime = %sessionsAlltime%;
-              const containersMaxConcurrent = %containersMaxConcurrent%;
-              
-              // slot 1, top left
-              const slot1 = new Chart(containersPerHost, {
-                    type: 'line',
-                    data: {
-                          labels: containersPerHostLabels,
-                          datasets: containersPerHostDatasets
-                    },
-                    options: {
-                          responsive: true,
-                          maintainAspectRatio: true,
-                          scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                       stepSize: 1
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        autoSkip: true,
-                                        maxRotation: 90,
-                                        minRotation: 90
-                                    }
-                                }
-                          }
-                    }
-              });
-              slot1.options.plugins.decimation.algorithm = 'min-max';
-              slot1.options.plugins.decimation.enabled = false;
-              slot1.options.plugins.decimation.samples = 500;
-              slot1.update()
-              
-              // slot 2, top right
-              new Chart(containersRemaining, {
-                  type: 'pie',
-                  data: {
-                      labels: ['Never used / scaling reserve', 'Currently in use', 'Max concurrent containers so far'],
-                      datasets: [
-                            {
-                                  data: [
-                                      (maxContainers-(totalContainers > containersMaxConcurrent ? totalContainers : 0)-containersMaxConcurrent), 
-                                      totalContainers,
-                                      containersMaxConcurrent
-                                  ],
-                                  backgroundColor: [
-                                      'rgb(0, 255, 0)',
-                                      'rgb(255, 255, 0)',
-                                      'rgb(255, 165, 0)',
-                                  ]
-                            }
-                      ]
-                  },
-                  options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                  position: 'bottom',
-                            },
+        const containersPerHost = document.getElementById('containersPerHostCanvas');
+        const containersRemaining = document.getElementById('containersRemainingCanvas');
+        const sessionTotals = document.getElementById('sessionTotalsCanvas');
+        const activeSessions = document.getElementById('activeSessionsCanvas');
+        
+        const containersPerHostLabels = %containersPerHostLabels%;
+        const containersPerHostDatasets = %containersPerHostDatasets%;
+        const totalLabels = %totalLabels%;
+        const totalDatasets = %totalDatasets%;
+        const totalSessions = %totalSessions%;
+        const totalContainers = %totalContainers%;
+        const maxContainers = %maxContainers%;
+        const sessionsAlltime = %sessionsAlltime%;
+        const containersMaxConcurrent = %containersMaxConcurrent%;
+        
+        // slot 1, top left
+        const slot1 = new Chart(containersPerHost, {
+            type: 'line',
+            data: {
+                labels: containersPerHostLabels,
+                datasets: containersPerHostDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
                         }
-                  },
-              });
-              
-              // slot 3, bottom left
-              const slot3 = new Chart(sessionTotals, {
-                    type: 'line',
-                    data: {
-                          labels: totalLabels,
-                          datasets: totalDatasets
                     },
-                    options: {
-                          responsive: true,
-                          maintainAspectRatio: true,
-                          scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                       stepSize: 1
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        autoSkip: true,
-                                        maxRotation: 90,
-                                        minRotation: 90
-                                    }
-                                }
-                          }
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 90,
+                            minRotation: 90
+                        }
                     }
-              });
-              slot3.options.plugins.decimation.algorithm = 'min-max';
-              slot3.options.plugins.decimation.enabled = false;
-              slot3.options.plugins.decimation.samples = 500;
-              slot3.update()
-              
-              // slot 4, bottom right
-              if ((totalSessions-totalContainers) || totalContainers) {
-                  new Chart(activeSessions, {
-                      type: 'pie',
-                      data: {
-                          labels: ['No container', 'With container'],
-                          datasets: [
-                                {
-                                      data: [
-                                          (totalSessions-totalContainers), 
-                                          totalContainers
-                                      ],
-                                      backgroundColor: [
-                                          'rgb(255, 255, 0)',
-                                          'rgb(0, 255, 0)'
-                                      ]
-                                }
-                          ]
-                      },
-                      options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: {
-                                      position: 'bottom',
-                                },
-                            }
-                      },
-                  });
-              } else {
-                  document.querySelector('div#activeSessionsContainer').style.display = 'none'
-              }
-              
-              let reloadInterval = null;
-              function enableAutoReload() {
-                  reloadInterval = setInterval(
-                           function() { 
-                                window.location=window.location;
-                           },
-                           30000
-                   );
-              }
-              
-              enableAutoReload();
-              document.addEventListener("visibilitychange", function() {
-                   if (document.hidden){
-                       clearInterval(reloadInterval);
-                   } else {
-                       enableAutoReload();
-                   }
-              });
+                }
+            }
+        });
+        slot1.options.plugins.decimation.algorithm = 'min-max';
+        slot1.options.plugins.decimation.enabled = false;
+        slot1.options.plugins.decimation.samples = 500;
+        slot1.update()
+        
+        // slot 2, top right
+        new Chart(containersRemaining, {
+            type: 'pie',
+            data: {
+                labels: ['Never used / scaling reserve', 'Currently in use', 'Max concurrent containers so far'],
+                datasets: [
+                    {
+                        data: [
+                            (maxContainers-(totalContainers > containersMaxConcurrent ? totalContainers : 0)-containersMaxConcurrent), 
+                            totalContainers,
+                            containersMaxConcurrent
+                        ],
+                        backgroundColor: [
+                            'rgb(0, 255, 0)',
+                            'rgb(255, 255, 0)',
+                            'rgb(255, 165, 0)',
+                        ]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                }
+            },
+        });
+        
+        // slot 3, bottom left
+        const slot3 = new Chart(sessionTotals, {
+            type: 'line',
+            data: {
+                labels: totalLabels,
+                datasets: totalDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 90,
+                            minRotation: 90
+                        }
+                    }
+                }
+            }
+        });
+        slot3.options.plugins.decimation.algorithm = 'min-max';
+        slot3.options.plugins.decimation.enabled = false;
+        slot3.options.plugins.decimation.samples = 500;
+        slot3.update()
+        
+        // slot 4, bottom right
+        if ((totalSessions-totalContainers) || totalContainers) {
+            new Chart(activeSessions, {
+                type: 'pie',
+                data: {
+                    labels: ['No container', 'With container'],
+                    datasets: [
+                        {
+                            data: [
+                              (totalSessions-totalContainers), 
+                              totalContainers
+                            ],
+                            backgroundColor: [
+                              'rgb(255, 255, 0)',
+                              'rgb(0, 255, 0)'
+                            ]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                              position: 'bottom',
+                        },
+                    }
+                },
+            });
+        } else {
+            document.querySelector('div#activeSessionsContainer').style.display = 'none'
+        }
+        
+        let reloadInterval = null;
+        function enableAutoReload() {
+            reloadInterval = setInterval(
+                function() { 
+                    window.location=window.location;
+                },
+                30000
+            );
+        }
+        
+        enableAutoReload();
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden){
+                clearInterval(reloadInterval);
+            } else {
+                enableAutoReload();
+            }
+        });
         </script>
-  </body>
+    </body>
 </html>
 TPL;
 
