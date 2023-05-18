@@ -61,7 +61,7 @@ final class DashboardUpdate extends Command
         <div class="row mb-3 text-center">
             <div class="col-md-8 themed-grid-col">
                 <div id="sessionTotalsContainer" class="chart">
-                    <h3>Sessions &amp; containers total (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
+                    <h3>Sessions, unique clients &amp; containers total (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                     <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
@@ -306,7 +306,7 @@ TPL;
         foreach ($dataPoints as $dataPoint) {
             $labels[] = (new \DateTime($dataPoint['timeOfCapture']))->format('H:i');
             foreach ($dataPoint as $valueName => $singleValue) {
-                if (is_numeric($valueName) || 'timeOfCapture' === $valueName || 'Remaining containers' === $valueName) {
+                if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
                     continue;
                 }
 

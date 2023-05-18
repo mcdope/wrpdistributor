@@ -17,6 +17,7 @@ final class Statistics
         $containerHostsAvailable = $this->serviceContainer->dockerManager->countAvailableContainerHosts();
         $sessionsPerHost = $this->serviceContainer->dockerManager->countSessionsPerContainerHost();
         $totalMaxContainers = $this->serviceContainer->dockerManager->countTotalMaxContainers();
+        $uniqueClientIps = $this->serviceContainer->statistics->getUniqueClientIps();
 
         return [
             'activeSessions' => $sessionCount,
@@ -24,6 +25,7 @@ final class Statistics
             'remainingContainers' => $totalMaxContainers - $portsUsedCount,
             'containerHosts' => $containerHostsAvailable,
             'containerHostsWithSessions' => serialize($sessionsPerHost),
+            'uniqueClientIps' => $uniqueClientIps,
         ];
     }
 
@@ -32,9 +34,9 @@ final class Statistics
         $statement = $this->serviceContainer->pdo->prepare('
             INSERT INTO `statistics` (
                  activeSessions, containersRunningTotal, remainingContainersTotal,
-                 containerHostsAvailable, containersInUsePerHost
+                 containerHostsAvailable, containersInUsePerHost, uniqueClientIps
            ) VALUES (
-                 :activeSessions, :containersRunning, :remainingContainers, :containerHosts, :containerHostsWithSessions
+                 :activeSessions, :containersRunning, :remainingContainers, :containerHosts, :containerHostsWithSessions, :uniqueClientIps
            )
         ');
 
@@ -85,7 +87,7 @@ final class Statistics
         }
 
         $statement = $this->serviceContainer->pdo->prepare('
-            SELECT timeOfCapture, activeSessions as \'Active sessions\', containersRunningTotal as \'Active containers\', remainingContainersTotal as \'Remaining containers\' 
+            SELECT timeOfCapture, activeSessions as \'Active sessions\', containersRunningTotal as \'Active containers\', uniqueClientIps as \'Active unique clients\' 
             FROM `statistics` WHERE timeOfCapture >= :from AND timeOfCapture <= :till
             ORDER BY timeOfCapture ASC
         ');
@@ -110,6 +112,14 @@ final class Statistics
     public function getMaxConcurrentContainersServed(): int
     {
         $statement = $this->serviceContainer->pdo->prepare("SELECT MAX(containersRunningTotal) FROM statistics");
+        $statement->execute([]);
+
+        return (int) $statement->fetchColumn(0);
+    }
+
+    public function getUniqueClientIps(): int
+    {
+        $statement = $this->serviceContainer->pdo->prepare("SELECT COUNT(DISTINCT clientIp) FROM sessions");
         $statement->execute([]);
 
         return (int) $statement->fetchColumn(0);
