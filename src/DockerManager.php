@@ -260,10 +260,6 @@ final class DockerManager
      */
     public function stopContainer(Session $session): void
     {
-        if (null === $session->id) {
-            throw new \LogicException('A not yet persisted session for sure has no container!');
-        }
-
         if (null === $session->wrpContainerId) {
             throw new \LogicException(
                 sprintf(

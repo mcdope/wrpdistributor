@@ -54,6 +54,25 @@ final readonly class StartSession implements ActionInterface
             );
 
             exit(1);
+        } catch (\PDOException $pdoException) {
+            $this->serviceContainer->logger->warning(
+                sprintf('PDOException occurred in %s, shutting down started container again', self::class),
+                [
+                    'message' => $pdoException->getMessage(),
+                    'trace' => $pdoException->getTrace(),
+                ],
+            );
+
+            $this->serviceContainer->dockerManager->stopContainer($session);
+
+            http_response_code(503);
+            echo sprintf(
+                '<h1>%s</h1><p>%s</p>',
+                'Session persisting failed!',
+                $pdoException->getMessage(),
+            );
+
+            exit(1);
         } catch (\Throwable $throwable) {
             http_response_code(503);
 
