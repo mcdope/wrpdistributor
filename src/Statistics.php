@@ -100,9 +100,11 @@ final class Statistics
     public function getTotalSessionsServed(): int
     {
         $statement = $this->serviceContainer->pdo->prepare("
-            SELECT (AUTO_INCREMENT - 1) FROM information_schema.tables 
-            WHERE table_name = 'sessions' 
-              AND table_schema = DATABASE()
+            SELECT MAX(totalSessions) FROM (
+                SELECT (AUTO_INCREMENT - 1) AS totalSessions FROM information_schema.tables WHERE table_name = 'sessions' AND table_schema = DATABASE()
+                UNION  
+                SELECT MAX(id) AS totalSessions FROM sessions
+            ) AS inMemoryTempTable
         ");
 
         $statement->execute([]);
