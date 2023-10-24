@@ -111,9 +111,10 @@ final class Statistics
 
         return (int) $statement->fetchColumn(0);
     }
+
     public function getMaxConcurrentContainersServed(): int
     {
-        $statement = $this->serviceContainer->pdo->prepare("SELECT MAX(containersRunningTotal) FROM statistics");
+        $statement = $this->serviceContainer->pdo->prepare('SELECT MAX(containersRunningTotal) FROM statistics');
         $statement->execute([]);
 
         return (int) $statement->fetchColumn(0);
@@ -121,7 +122,7 @@ final class Statistics
 
     public function getUniqueClientIps(): int
     {
-        $statement = $this->serviceContainer->pdo->prepare("SELECT COUNT(DISTINCT clientIp) FROM sessions");
+        $statement = $this->serviceContainer->pdo->prepare('SELECT COUNT(DISTINCT clientIp) FROM sessions');
         $statement->execute([]);
 
         return (int) $statement->fetchColumn(0);

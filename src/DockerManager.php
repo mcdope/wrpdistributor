@@ -345,7 +345,7 @@ final class DockerManager
     public function stopContainerBySessionIdAndHost(int $sessionId, string $hostname): void
     {
         $hostIndex = array_search($hostname, $this->containerHosts, true);
-        if ($hostIndex === false) {
+        if (false === $hostIndex) {
             throw new \RuntimeException('Can\'t find host in config?');
         }
 
@@ -680,7 +680,7 @@ final class DockerManager
     public function getContainersOnHost(string $hostname): array
     {
         $hostIndex = array_search($hostname, $this->containerHosts, true);
-        if ($hostIndex === false) {
+        if (false === $hostIndex) {
             throw new \RuntimeException('Can\'t find host in config?');
         }
 
@@ -727,8 +727,8 @@ final class DockerManager
         $filtered = [];
         $ssh->enablePTY();
         $status = $ssh->exec($getContainersCommand);
-        if ($status === false) {
-            throw new \RuntimeException("Can't get running containers on host '". $hostname . "'!");
+        if (false === $status) {
+            throw new \RuntimeException("Can't get running containers on host '" . $hostname . "'!");
         }
         $shellOutput = (string) $ssh->read();
 

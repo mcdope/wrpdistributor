@@ -4,11 +4,9 @@ declare(strict_types = 1);
 
 namespace AmiDev\WrpDistributor\Commands;
 
-use AmiDev\WrpDistributor\DockerManager;
 use AmiDev\WrpDistributor\Session;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -55,10 +53,10 @@ final class CleanUnusedContainers extends Command
                         $output->writeln('Stopping container');
                         $this->serviceContainer->dockerManager->stopContainerBySessionIdAndHost(
                             $sessionIdFromContainerName,
-                            $hostname
+                            $hostname,
                         );
 
-                        $success++;
+                        ++$success;
                     } catch (\Throwable $throwable) {
                         $output->writeln('WARN: \Throwable was thrown, message was: ' . $throwable->getMessage());
 
