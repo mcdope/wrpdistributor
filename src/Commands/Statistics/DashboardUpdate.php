@@ -262,7 +262,7 @@ TPL;
     private function createContainersPerHostChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-'.(string) self::DAYS_TO_SHOW.' days'));
+        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-' . (string) self::DAYS_TO_SHOW . ' days'));
         foreach ($dataPoints as $timeOfCapture => $hostAndCountPerPoint) {
             $labels[] = (new \DateTime($timeOfCapture))->format('H:i');
 
@@ -302,7 +302,7 @@ TPL;
     private function createTotalsChart(): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-'.(string) self::DAYS_TO_SHOW.' days'));
+        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-' . (string) self::DAYS_TO_SHOW . ' days'));
         foreach ($dataPoints as $dataPoint) {
             $labels[] = (new \DateTime($dataPoint['timeOfCapture']))->format('H:i');
             foreach ($dataPoint as $valueName => $singleValue) {
