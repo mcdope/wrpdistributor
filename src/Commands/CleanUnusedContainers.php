@@ -85,7 +85,7 @@ final class CleanUnusedContainers extends Command
         $output->writeln('');
         $output->writeln(
             sprintf(
-                'INFO: Cleanup of %d containers finished, %d containers terminated successfully - %d containers failed to terminate - %d containers skipped because session exists.',
+                'INFO: Cleanup of %d containers finished, %d containers terminated successfully - %d containers failed to terminate - %d containers skipped (session exists).',
                 array_sum([$success, $error, $skipped]),
                 $success,
                 $error,
@@ -95,7 +95,7 @@ final class CleanUnusedContainers extends Command
 
         $this->serviceContainer->logger->info(
             sprintf(
-                'INFO: Cleanup of %d containers finished, %d containers terminated successfully - %d containers failed to terminate - %d containers skipped because session exists.',
+                'INFO: Cleanup of %d containers finished, %d containers terminated successfully - %d containers failed to terminate - %d containers skipped (session exists).',
                 array_sum([$success, $error, $skipped]),
                 $success,
                 $error,
