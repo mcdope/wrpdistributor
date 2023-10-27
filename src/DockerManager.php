@@ -222,7 +222,7 @@ final class DockerManager
      */
     public function stopContainer(Session $session): void
     {
-        if (null === $session->wrpContainerId) {
+        if (null === $session->wrpContainerId || null === $session->containerHost) {
             throw new \LogicException(
                 sprintf(
                     'Session %d has no container attached! I would suggest calling startContainer() before, but since you wanted to stop it... lol...',
@@ -601,6 +601,9 @@ final class DockerManager
         return $return;
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     private function getIndexByHostname(string $hostname): int
     {
         $return = array_search($hostname, $this->containerHosts, true);
@@ -612,9 +615,18 @@ final class DockerManager
         return $return;
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     private function getSshConnnection(string $hostname): SSH2
     {
-        $callingMethod = debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
+        /**
+         * @psalm-suppress PossiblyUndefinedIntArrayOffset
+         */
+        $callingMethod = debug_backtrace(
+            (int) !DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS,
+            2
+        )[1]['function'];
 
         $hostIndex = $this->getIndexByHostname($hostname);
         [$userName, $privateKey] = $this->privateKeys[$hostIndex];

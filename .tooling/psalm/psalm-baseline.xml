@@ -24,25 +24,12 @@
     <PossiblyUndefinedIntArrayOffset>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->containerHosts[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->maxContainers[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->maxContainers[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->privateKeys[$hostIndex]]]></code>
       <code><![CDATA[$this->privateKeys[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->privateKeys[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->privateKeys[$indexOfSelectedHost]]]></code>
       <code><![CDATA[$this->tlsCertificates[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->tlsCertificates[$indexOfFirstUnusedContainerHost]]]></code>
-      <code><![CDATA[$this->tlsCertificates[$indexOfSelectedHost]]]></code>
-      <code><![CDATA[$this->tlsCertificates[$indexOfSelectedHost]]]></code>
     </PossiblyUndefinedIntArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
       <code><![CDATA[$_ENV['CONTAINER_HOSTS']]]></code>
@@ -53,7 +40,6 @@
       <code><![CDATA[$determinedContainerHost['cert']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
-      <code><![CDATA[$determinedContainerHost['privateKey']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
 </files>
