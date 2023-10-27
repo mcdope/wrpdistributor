@@ -208,39 +208,8 @@ final class DockerManager
             ],
         );
 
-        if (!$ssh->exec(
-            $containerStartCommand,
-            function (string $shellOutput) use ($session, $nextFreePort): void {
-                if (!$this->isContainerIdValid($shellOutput)) {
-                    $this->serviceContainer->logger->warning(
-                        'Container start seems to have failed, unexpected output from Docker',
-                        [
-                            'shellOutput' => $shellOutput,
-                            'sessionId' => $session->id,
-                            'port' => $nextFreePort,
-                            'containerHost' => $session->containerHost,
-                        ],
-                    );
-
-                    throw new ContainerStartException(
-                        'Docker command returned unexpected output on container start! Output was: ' . $shellOutput,
-                    );
-                }
-
-                $shellOutput = trim($shellOutput);
-                $session->wrpContainerId = $shellOutput;
-                $session->port = $nextFreePort;
-                $session->upsert();
-
-                $this->serviceContainer->logger->info(
-                    'startContainer() successfully spun up new container',
-                    [
-                        'containerId' => $session->wrpContainerId,
-                        'shellOutput' => $shellOutput,
-                    ],
-                );
-            },
-        )) { // start if body
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStartCommand)) { // start if body
             $this->serviceContainer->logger->warning(
                 'startContainer() failed to spin up new container',
                 [
@@ -252,6 +221,35 @@ final class DockerManager
                 "Can't send command to start container on determined host! Temporary network issue maybe?",
             );
         }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container start seems to have failed, unexpected output from Docker',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $session->id,
+                    'port' => $nextFreePort,
+                    'containerHost' => $session->containerHost,
+                ],
+            );
+
+            throw new ContainerStartException(
+                'Docker command returned unexpected output on container start! Output was: ' . $shellOutput,
+            );
+        }
+
+        $session->wrpContainerId = $shellOutput;
+        $session->port = $nextFreePort;
+        $session->upsert();
+
+        $this->serviceContainer->logger->info(
+            'startContainer() successfully spun up new container',
+            [
+                'containerId' => $session->wrpContainerId,
+                'shellOutput' => $shellOutput,
+            ],
+        );
     }
 
     /**
@@ -314,28 +312,30 @@ final class DockerManager
             $session->wrpContainerId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function (string $shellOutput) use ($session): void {
-            if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
-                $this->serviceContainer->logger->warning(
-                    'Container stop seems to have failed, unexpected output from Docker.',
-                    [
-                        'shellOutput' => $shellOutput,
-                        'sessionId' => $session->id,
-                        'port' => $session->port,
-                        'containerHost' => $session->containerHost,
-                    ],
-                );
-            }
-
-            $session->wrpContainerId = null;
-            $session->port = null;
-            $session->containerHost = null;
-
-            $session->upsert();
-            $session->delete();
-        })) {
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStopCommand)) {
             throw new \RuntimeException("Can't stop container!");
         }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container stop seems to have failed, unexpected output from Docker.',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $session->id,
+                    'port' => $session->port,
+                    'containerHost' => $session->containerHost,
+                ],
+            );
+        }
+
+        $session->wrpContainerId = null;
+        $session->port = null;
+        $session->containerHost = null;
+
+        $session->upsert();
+        $session->delete();
     }
 
     /**
@@ -392,19 +392,21 @@ final class DockerManager
             $sessionId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function (string $shellOutput) use ($sessionId, $hostname): void {
-            if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
-                $this->serviceContainer->logger->warning(
-                    'Container stop seems to have failed, unexpected output from Docker.',
-                    [
-                        'shellOutput' => $shellOutput,
-                        'sessionId' => $sessionId,
-                        'containerHost' => $hostname,
-                    ],
-                );
-            }
-        })) {
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStopCommand)) {
             throw new \RuntimeException("Can't stop container!");
+        }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container stop seems to have failed, unexpected output from Docker.',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $sessionId,
+                    'containerHost' => $hostname,
+                ],
+            );
         }
     }
 
@@ -730,7 +732,7 @@ final class DockerManager
         if (false === $status) {
             throw new \RuntimeException("Can't get running containers on host '" . $hostname . "'!");
         }
-        $shellOutput = (string) $ssh->read();
+        $shellOutput = trim((string) $ssh->read());
 
         $array = explode("\n", $shellOutput);
         foreach ($array as $value) {
