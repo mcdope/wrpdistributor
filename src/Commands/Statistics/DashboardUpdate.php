@@ -351,7 +351,7 @@ TPL;
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach([1, 7, 30] as $daysToShow) {
+        foreach ([1, 7, 30] as $daysToShow) {
             try {
                 [
                     $jsContainersPerHostLabels,
