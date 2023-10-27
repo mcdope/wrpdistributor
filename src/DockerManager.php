@@ -629,7 +629,7 @@ final class DockerManager
         }
 
         $ssh = new SSH2($this->containerHosts[$hostIndex]);
-        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) { // @todo: this stuff should probably be extracted into a method
+        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) {
             $this->serviceContainer->logger->debug($callingMethod . '() retry loop', ['iteration' => $try]);
 
             try {
