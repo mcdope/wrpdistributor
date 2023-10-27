@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class DashboardUpdate extends Command
 {
-    private const DAYS_TO_SHOW = 1;
-
     private const DASHBOARD_TEMPLATE = /** @lang HTML */
         <<<TPL
 <!DOCTYPE html>
@@ -259,10 +257,10 @@ TPL;
      *
      * @throws \JsonException
      */
-    private function createContainersPerHostChart(): array
+    private function createContainersPerHostChart(int $daysToShow): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-' . (string) self::DAYS_TO_SHOW . ' days'));
+        $dataPoints = $this->serviceContainer->statistics->getContainerHostUsageForTimeframe(new \DateTime('-' . (string) $daysToShow . ' days'));
         foreach ($dataPoints as $timeOfCapture => $hostAndCountPerPoint) {
             $labels[] = (new \DateTime($timeOfCapture))->format('H:i');
 
@@ -299,10 +297,10 @@ TPL;
      *
      * @throws \JsonException
      */
-    private function createTotalsChart(): array
+    private function createTotalsChart(int $daysToShow): array
     {
         $labels = $datasets = [];
-        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-' . (string) self::DAYS_TO_SHOW . ' days'));
+        $dataPoints = $this->serviceContainer->statistics->getTotalsForTimeframe(new \DateTime('-' . (string) $daysToShow . ' days'));
         foreach ($dataPoints as $dataPoint) {
             $labels[] = (new \DateTime($dataPoint['timeOfCapture']))->format('H:i');
             foreach ($dataPoint as $valueName => $singleValue) {
@@ -353,59 +351,66 @@ TPL;
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        try {
-            [
-                $jsContainersPerHostLabels,
-                $jsContainersPerHostDatasets
-            ] = $this->createContainersPerHostChart();
-
-            [
-                $jsTotalLabels,
-                $jsTotalDatasets
-            ] = $this->createTotalsChart();
-
-            $htmlOutput = str_replace(
-                [
-                    '%containersPerHostLabels%',
-                    '%containersPerHostDatasets%',
-                    '%totalSessions%',
-                    '%totalContainers%',
-                    '%maxContainers%',
-                    '%totalLabels%',
-                    '%totalDatasets%',
-                    '%sessionsAlltime%',
-                    '%containersMaxConcurrent%',
-                    '%daysToShow%',
-                ],
+        foreach ([1, 7, 30] as $daysToShow) {
+            try {
                 [
                     $jsContainersPerHostLabels,
-                    $jsContainersPerHostDatasets,
-                    $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0],
-                    $this->serviceContainer->dockerManager->countsPortsUsed(),
-                    $this->serviceContainer->dockerManager->countTotalMaxContainers(),
-                    $jsTotalLabels,
-                    $jsTotalDatasets,
-                    $this->serviceContainer->statistics->getTotalSessionsServed(),
-                    $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
-                    self::DAYS_TO_SHOW,
-                ],
-                self::DASHBOARD_TEMPLATE,
-            );
+                    $jsContainersPerHostDatasets
+                ] = $this->createContainersPerHostChart($daysToShow);
 
-            file_put_contents('dashboard.html', $htmlOutput);
-
-            return self::SUCCESS;
-        } catch (\Throwable $throwable) {
-            $this->serviceContainer->logger->warning(
-                sprintf('Throwable occurred in %s', self::class),
                 [
-                    'message' => $throwable->getMessage(),
-                    'trace' => $throwable->getTrace(),
-                ],
-            );
+                    $jsTotalLabels,
+                    $jsTotalDatasets
+                ] = $this->createTotalsChart($daysToShow);
 
-            return self::FAILURE;
+                $htmlOutput = str_replace(
+                    [
+                        '%containersPerHostLabels%',
+                        '%containersPerHostDatasets%',
+                        '%totalSessions%',
+                        '%totalContainers%',
+                        '%maxContainers%',
+                        '%totalLabels%',
+                        '%totalDatasets%',
+                        '%sessionsAlltime%',
+                        '%containersMaxConcurrent%',
+                        '%daysToShow%',
+                    ],
+                    [
+                        $jsContainersPerHostLabels,
+                        $jsContainersPerHostDatasets,
+                        $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0],
+                        $this->serviceContainer->dockerManager->countsPortsUsed(),
+                        $this->serviceContainer->dockerManager->countTotalMaxContainers(),
+                        $jsTotalLabels,
+                        $jsTotalDatasets,
+                        $this->serviceContainer->statistics->getTotalSessionsServed(),
+                        $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
+                        $daysToShow,
+                    ],
+                    self::DASHBOARD_TEMPLATE,
+                );
+
+                $filename = 'dashboard.html';
+                if ($daysToShow !== 1) {
+                    $filename = sprintf('dashboard.%dd.html', $daysToShow);
+                }
+
+                file_put_contents($filename, $htmlOutput);
+            } catch (\Throwable $throwable) {
+                $this->serviceContainer->logger->warning(
+                    sprintf('Throwable occurred in %s', self::class),
+                    [
+                        'message' => $throwable->getMessage(),
+                        'trace' => $throwable->getTrace(),
+                    ],
+                );
+
+                return self::FAILURE;
+            }
         }
+
+        return self::SUCCESS;
     }
 
     private function randomRgbCssColorCode(): string

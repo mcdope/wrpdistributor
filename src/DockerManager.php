@@ -137,44 +137,7 @@ final class DockerManager
         );
 
         $session->containerHost = $determinedContainerHost['host'];
-        [$userName, $privateKey] = $determinedContainerHost['privateKey'];
-        [$tlsCert, $tlsPrivateKey] = $determinedContainerHost['cert'];
-
-        if (isset($determinedContainerHost['privateKey'][2])) {
-            $key = PublicKeyLoader::load(
-                file_get_contents('ssh/' . $privateKey),
-                $determinedContainerHost['privateKey'][2],
-            );
-        } else {
-            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        }
-
-        $ssh = new SSH2($session->containerHost);
-        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) { // @todo: this stuff should probably be extracted into a method
-            $this->serviceContainer->logger->debug('startContainer() retry loop', ['iteration' => $try]);
-
-            try {
-                if (!$ssh->login($userName, $key)) {
-                    $this->serviceContainer->logger->error('startContainer() login returned false!', $ssh->getErrors());
-                    throw new ContainerStartException('Can\'t login to containerHost! Configuration issue?');
-                }
-
-                $this->serviceContainer->logger->debug('startContainer() login success', ['iteration' => $try]);
-                break;
-            } catch (\Throwable $t) {
-                $this->serviceContainer->logger->error(
-                    'startContainer() failed to SSH into the containerHost! Retrying...',
-                    ['message' => $t->getMessage(), 'trace' => $t->getTrace(), 'libErrors' => $ssh->getErrors()],
-                );
-
-                continue;
-            }
-        }
-
-        if (!$ssh->isConnected() || !$ssh->isAuthenticated()) {
-            $this->serviceContainer->logger->error('startContainer() still have no SSH connection after all retries!', $ssh->getErrors());
-            throw new ContainerStartException('Can\'t login to containerHost! Configuration issue?');
-        }
+        $ssh = $this->getSshConnnection($session->containerHost);
 
         try {
             $nextFreePort = $this->findUnusedPort($determinedContainerHost['host']);
@@ -187,6 +150,7 @@ final class DockerManager
         $authToken = $session->generateContainerAuthToken();
         $session->authToken = $authToken;
         $wrpPortForBind = $useTLS ? 8081 : 8080;
+        [$tlsCert, $tlsPrivateKey] = $determinedContainerHost['cert'];
         $containerStartCommand = sprintf(
             self::WRP_LAUNCH_COMMAND,
             $tlsCert,
@@ -208,39 +172,8 @@ final class DockerManager
             ],
         );
 
-        if (!$ssh->exec(
-            $containerStartCommand,
-            function (string $shellOutput) use ($session, $nextFreePort): void {
-                if (!$this->isContainerIdValid($shellOutput)) {
-                    $this->serviceContainer->logger->warning(
-                        'Container start seems to have failed, unexpected output from Docker',
-                        [
-                            'shellOutput' => $shellOutput,
-                            'sessionId' => $session->id,
-                            'port' => $nextFreePort,
-                            'containerHost' => $session->containerHost,
-                        ],
-                    );
-
-                    throw new ContainerStartException(
-                        'Docker command returned unexpected output on container start! Output was: ' . $shellOutput,
-                    );
-                }
-
-                $shellOutput = trim($shellOutput);
-                $session->wrpContainerId = $shellOutput;
-                $session->port = $nextFreePort;
-                $session->upsert();
-
-                $this->serviceContainer->logger->info(
-                    'startContainer() successfully spun up new container',
-                    [
-                        'containerId' => $session->wrpContainerId,
-                        'shellOutput' => $shellOutput,
-                    ],
-                );
-            },
-        )) { // start if body
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStartCommand)) { // start if body
             $this->serviceContainer->logger->warning(
                 'startContainer() failed to spin up new container',
                 [
@@ -252,6 +185,35 @@ final class DockerManager
                 "Can't send command to start container on determined host! Temporary network issue maybe?",
             );
         }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container start seems to have failed, unexpected output from Docker',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $session->id,
+                    'port' => $nextFreePort,
+                    'containerHost' => $session->containerHost,
+                ],
+            );
+
+            throw new ContainerStartException(
+                'Docker command returned unexpected output on container start! Output was: ' . $shellOutput,
+            );
+        }
+
+        $session->wrpContainerId = $shellOutput;
+        $session->port = $nextFreePort;
+        $session->upsert();
+
+        $this->serviceContainer->logger->info(
+            'startContainer() successfully spun up new container',
+            [
+                'containerId' => $session->wrpContainerId,
+                'shellOutput' => $shellOutput,
+            ],
+        );
     }
 
     /**
@@ -260,7 +222,7 @@ final class DockerManager
      */
     public function stopContainer(Session $session): void
     {
-        if (null === $session->wrpContainerId) {
+        if (null === $session->wrpContainerId || null === $session->containerHost) {
             throw new \LogicException(
                 sprintf(
                     'Session %d has no container attached! I would suggest calling startContainer() before, but since you wanted to stop it... lol...',
@@ -270,72 +232,37 @@ final class DockerManager
             );
         }
 
-        $hostIndex = array_search($session->containerHost, $this->containerHosts, true);
-        [$userName, $privateKey] = $this->privateKeys[$hostIndex];
-
-        if (isset($this->privateKeys[$hostIndex][2])) {
-            $key = PublicKeyLoader::load(
-                file_get_contents('ssh/' . $privateKey),
-                $this->privateKeys[$hostIndex][2],
-            );
-        } else {
-            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        }
-
-        $ssh = new SSH2($session->containerHost);
-        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) { // @todo: this stuff should probably be extracted into a method
-            $this->serviceContainer->logger->debug('stopContainer() retry loop', ['iteration' => $try]);
-
-            try {
-                if (!$ssh->login($userName, $key)) {
-                    $this->serviceContainer->logger->error('stopContainer() login returned false!', $ssh->getErrors());
-                    throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-                }
-
-                $this->serviceContainer->logger->debug('stopContainer() login success', ['iteration' => $try]);
-                break;
-            } catch (\Throwable $t) {
-                $this->serviceContainer->logger->error(
-                    'stopContainer() failed to SSH into the containerHost! Retrying...',
-                    ['message' => $t->getMessage(), 'trace' => $t->getTrace(), 'libErrors' => $ssh->getErrors()],
-                );
-
-                continue;
-            }
-        }
-
-        if (!$ssh->isConnected() || !$ssh->isAuthenticated()) {
-            $this->serviceContainer->logger->error('stopContainer() still have no SSH connection after all retries!', $ssh->getErrors());
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
+        $ssh = $this->getSshConnnection($session->containerHost);
 
         $containerStopCommand = sprintf(
             'docker stop %s',
             $session->wrpContainerId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function (string $shellOutput) use ($session): void {
-            if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
-                $this->serviceContainer->logger->warning(
-                    'Container stop seems to have failed, unexpected output from Docker.',
-                    [
-                        'shellOutput' => $shellOutput,
-                        'sessionId' => $session->id,
-                        'port' => $session->port,
-                        'containerHost' => $session->containerHost,
-                    ],
-                );
-            }
-
-            $session->wrpContainerId = null;
-            $session->port = null;
-            $session->containerHost = null;
-
-            $session->upsert();
-            $session->delete();
-        })) {
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStopCommand)) {
             throw new \RuntimeException("Can't stop container!");
         }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container stop seems to have failed, unexpected output from Docker.',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $session->id,
+                    'port' => $session->port,
+                    'containerHost' => $session->containerHost,
+                ],
+            );
+        }
+
+        $session->wrpContainerId = null;
+        $session->port = null;
+        $session->containerHost = null;
+
+        $session->upsert();
+        $session->delete();
     }
 
     /**
@@ -344,67 +271,28 @@ final class DockerManager
      */
     public function stopContainerBySessionIdAndHost(int $sessionId, string $hostname): void
     {
-        $hostIndex = array_search($hostname, $this->containerHosts, true);
-        if (false === $hostIndex) {
-            throw new \RuntimeException('Can\'t find host in config?');
-        }
-
-        [$userName, $privateKey] = $this->privateKeys[$hostIndex];
-
-        if (isset($this->privateKeys[$hostIndex][2])) {
-            $key = PublicKeyLoader::load(
-                file_get_contents('ssh/' . $privateKey),
-                $this->privateKeys[$hostIndex][2],
-            );
-        } else {
-            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        }
-
-        $ssh = new SSH2($this->containerHosts[$hostIndex]);
-        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) { // @todo: this stuff should probably be extracted into a method
-            $this->serviceContainer->logger->debug('stopContainerBySessionIdAndHost() retry loop', ['iteration' => $try]);
-
-            try {
-                if (!$ssh->login($userName, $key)) {
-                    $this->serviceContainer->logger->error('stopContainerBySessionIdAndHost() login returned false!', $ssh->getErrors());
-                    throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-                }
-
-                $this->serviceContainer->logger->debug('stopContainerBySessionIdAndHost() login success', ['iteration' => $try]);
-                break;
-            } catch (\Throwable $t) {
-                $this->serviceContainer->logger->error(
-                    'stopContainerBySessionIdAndHost() failed to SSH into the containerHost! Retrying...',
-                    ['message' => $t->getMessage(), 'trace' => $t->getTrace(), 'libErrors' => $ssh->getErrors()],
-                );
-
-                continue;
-            }
-        }
-
-        if (!$ssh->isConnected() || !$ssh->isAuthenticated()) {
-            $this->serviceContainer->logger->error('stopContainerBySessionIdAndHost() still have no SSH connection after all retries!', $ssh->getErrors());
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
+        $ssh = $this->getSshConnnection($hostname);
 
         $containerStopCommand = sprintf(
             'docker stop wrp_session_%d',
             $sessionId,
         );
 
-        if (!$ssh->exec($containerStopCommand, function (string $shellOutput) use ($sessionId, $hostname): void {
-            if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
-                $this->serviceContainer->logger->warning(
-                    'Container stop seems to have failed, unexpected output from Docker.',
-                    [
-                        'shellOutput' => $shellOutput,
-                        'sessionId' => $sessionId,
-                        'containerHost' => $hostname,
-                    ],
-                );
-            }
-        })) {
+        $ssh->enablePTY();
+        if (!$ssh->exec($containerStopCommand)) {
             throw new \RuntimeException("Can't stop container!");
+        }
+
+        $shellOutput = trim((string) $ssh->read());
+        if (!str_contains($shellOutput, 'No such container') && !$this->isContainerIdValid($shellOutput)) {
+            $this->serviceContainer->logger->warning(
+                'Container stop seems to have failed, unexpected output from Docker.',
+                [
+                    'shellOutput' => $shellOutput,
+                    'sessionId' => $sessionId,
+                    'containerHost' => $hostname,
+                ],
+            );
         }
     }
 
@@ -580,7 +468,7 @@ final class DockerManager
 
         $previousSessionCount = null;
         foreach ($sessionCountByContainerHost as $containerHost => $sessionCount) {
-            $indexOfSelectedHost = array_search($containerHost, $this->containerHosts, true);
+            $indexOfSelectedHost = $this->getIndexByHostname($containerHost);
             if ($sessionCount >= $this->maxContainers[$indexOfSelectedHost]) {
                 $this->serviceContainer->logger->warning(
                     'Equal load balancing configured, but not all containerHosts allow the same amount of maxContainers!',
@@ -625,7 +513,7 @@ final class DockerManager
         asort($sessionCountByContainerHost);
 
         foreach ($sessionCountByContainerHost as $containerHost => $sessionCount) {
-            $indexOfSelectedHost = array_search($containerHost, $this->containerHosts, true);
+            $indexOfSelectedHost = $this->getIndexByHostname($containerHost);
 
             if ($sessionCount < $this->maxContainers[$indexOfSelectedHost]) {
                 return [
@@ -679,48 +567,7 @@ final class DockerManager
      */
     public function getContainersOnHost(string $hostname): array
     {
-        $hostIndex = array_search($hostname, $this->containerHosts, true);
-        if (false === $hostIndex) {
-            throw new \RuntimeException('Can\'t find host in config?');
-        }
-
-        [$userName, $privateKey] = $this->privateKeys[$hostIndex];
-
-        if (isset($this->privateKeys[$hostIndex][2])) {
-            $key = PublicKeyLoader::load(
-                file_get_contents('ssh/' . $privateKey),
-                $this->privateKeys[$hostIndex][2],
-            );
-        } else {
-            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
-        }
-
-        $ssh = new SSH2($this->containerHosts[$hostIndex]);
-        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) { // @todo: this stuff should probably be extracted into a method
-            $this->serviceContainer->logger->debug('getContainersOnHost() retry loop', ['iteration' => $try]);
-
-            try {
-                if (!$ssh->login($userName, $key)) {
-                    $this->serviceContainer->logger->error('getContainersOnHost() login returned false!', $ssh->getErrors());
-                    throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-                }
-
-                $this->serviceContainer->logger->debug('getContainersOnHost() login success', ['iteration' => $try]);
-                break;
-            } catch (\Throwable $t) {
-                $this->serviceContainer->logger->error(
-                    'getContainersOnHost() failed to SSH into the containerHost! Retrying...',
-                    ['message' => $t->getMessage(), 'trace' => $t->getTrace(), 'libErrors' => $ssh->getErrors()],
-                );
-
-                continue;
-            }
-        }
-
-        if (!$ssh->isConnected() || !$ssh->isAuthenticated()) {
-            $this->serviceContainer->logger->error('getContainersOnHost() still have no SSH connection after all retries!', $ssh->getErrors());
-            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
-        }
+        $ssh = $this->getSshConnnection($hostname);
 
         $getContainersCommand = "docker ps | grep wrp_session | awk '{ print \$NF }' | grep -o -E -i '([0-9]+)$'";
 
@@ -730,7 +577,7 @@ final class DockerManager
         if (false === $status) {
             throw new \RuntimeException("Can't get running containers on host '" . $hostname . "'!");
         }
-        $shellOutput = (string) $ssh->read();
+        $shellOutput = trim((string) $ssh->read());
 
         $array = explode("\n", $shellOutput);
         foreach ($array as $value) {
@@ -752,5 +599,75 @@ final class DockerManager
         }
 
         return $return;
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    private function getIndexByHostname(string $hostname): int
+    {
+        $return = array_search($hostname, $this->containerHosts, true);
+
+        if (false === $return) {
+            throw new \RuntimeException('Can\'t find given host!');
+        }
+
+        return $return;
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    private function getSshConnnection(string $hostname): SSH2
+    {
+        /**
+         * @psalm-suppress PossiblyUndefinedIntArrayOffset
+         */
+        $callingMethod = debug_backtrace(
+            (int) !DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS,
+            2
+        )[1]['function'];
+
+        $hostIndex = $this->getIndexByHostname($hostname);
+        [$userName, $privateKey] = $this->privateKeys[$hostIndex];
+
+        if (isset($this->privateKeys[$hostIndex][2])) {
+            $key = PublicKeyLoader::load(
+                file_get_contents('ssh/' . $privateKey),
+                $this->privateKeys[$hostIndex][2],
+            );
+        } else {
+            $key = PublicKeyLoader::load(file_get_contents('ssh/' . $privateKey));
+        }
+
+        $ssh = new SSH2($this->containerHosts[$hostIndex]);
+        for ($try = 1; $try <= self::MAX_CONNECT_RETRIES; ++$try) {
+            $this->serviceContainer->logger->debug($callingMethod . '() retry loop', ['iteration' => $try]);
+
+            try {
+                if (!$ssh->login($userName, $key)) {
+                    $this->serviceContainer->logger->error($callingMethod . '() login returned false!', $ssh->getErrors());
+                    throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
+                }
+
+                $this->serviceContainer->logger->debug($callingMethod . '() login success', ['iteration' => $try]);
+                break;
+            } catch (\Throwable $t) {
+                $this->serviceContainer->logger->error(
+                    $callingMethod . '() failed to SSH into the containerHost! Retrying...',
+                    ['message' => $t->getMessage(), 'trace' => $t->getTrace(), 'libErrors' => $ssh->getErrors()],
+                );
+
+                continue;
+            }
+        }
+
+        if (!$ssh->isConnected() || !$ssh->isAuthenticated()) {
+            $this->serviceContainer->logger->error($callingMethod . '() still have no SSH connection after all retries!', $ssh->getErrors());
+
+            throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
+        }
+
+        return $ssh;
     }
 }
