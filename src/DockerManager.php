@@ -268,7 +268,7 @@ final class DockerManager
             );
         }
 
-        $hostIndex = array_search($session->containerHost, $this->containerHosts, true);
+        $hostIndex = $this->getIndexByHostname($session->containerHost);
         [$userName, $privateKey] = $this->privateKeys[$hostIndex];
 
         if (isset($this->privateKeys[$hostIndex][2])) {
@@ -344,7 +344,7 @@ final class DockerManager
      */
     public function stopContainerBySessionIdAndHost(int $sessionId, string $hostname): void
     {
-        $hostIndex = array_search($hostname, $this->containerHosts, true);
+        $hostIndex = $this->getIndexByHostname($hostname);
         if (false === $hostIndex) {
             throw new \RuntimeException('Can\'t find host in config?');
         }
@@ -582,7 +582,7 @@ final class DockerManager
 
         $previousSessionCount = null;
         foreach ($sessionCountByContainerHost as $containerHost => $sessionCount) {
-            $indexOfSelectedHost = array_search($containerHost, $this->containerHosts, true);
+            $indexOfSelectedHost = $this->getIndexByHostname($containerHost);
             if ($sessionCount >= $this->maxContainers[$indexOfSelectedHost]) {
                 $this->serviceContainer->logger->warning(
                     'Equal load balancing configured, but not all containerHosts allow the same amount of maxContainers!',
@@ -627,7 +627,7 @@ final class DockerManager
         asort($sessionCountByContainerHost);
 
         foreach ($sessionCountByContainerHost as $containerHost => $sessionCount) {
-            $indexOfSelectedHost = array_search($containerHost, $this->containerHosts, true);
+            $indexOfSelectedHost = $this->getIndexByHostname($containerHost);
 
             if ($sessionCount < $this->maxContainers[$indexOfSelectedHost]) {
                 return [
@@ -681,7 +681,7 @@ final class DockerManager
      */
     public function getContainersOnHost(string $hostname): array
     {
-        $hostIndex = array_search($hostname, $this->containerHosts, true);
+        $hostIndex = $this->getIndexByHostname($hostname);
         if (false === $hostIndex) {
             throw new \RuntimeException('Can\'t find host in config?');
         }
@@ -751,6 +751,17 @@ final class DockerManager
         $return = [];
         foreach ($this->containerHosts as $containerHost) {
             $return[$containerHost] = $this->getContainersOnHost($containerHost);
+        }
+
+        return $return;
+    }
+
+    private function getIndexByHostname(string $hostname): int
+    {
+        $return = array_search($hostname, $this->containerHosts, true);
+
+        if (false === $return) {
+            throw new \RuntimeException('Can\'t find given host!');
         }
 
         return $return;
