@@ -429,9 +429,11 @@ TPL;
         $dataPoints = $this->serviceContainer->statistics->getSummarizedAndAveragedStatistics($groupByConstValue);
         foreach ($dataPoints as $dataPoint) {
             if (Statistics::GROUPBY_MONTH === $groupByConstValue) {
-                $labels[] = (\DateTime::createFromFormat(
-                    '!m',
-                    (string) $dataPoint['timeOfCapture'])
+                $labels[] = (
+                    \DateTime::createFromFormat(
+                        '!m',
+                        (string) $dataPoint['timeOfCapture']
+                    )
                 )->format('F');
             } else {
                 $labels[] = $dataPoint['timeOfCapture'];
