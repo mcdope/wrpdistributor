@@ -6,6 +6,10 @@ namespace AmiDev\WrpDistributor;
 
 final class Statistics
 {
+    public const GROUPBY_DATE = 'DATE';
+
+    public const GROUPBY_MONTH = 'MONTH';
+
     public function __construct(private ServiceContainer $serviceContainer)
     {
     }
@@ -126,5 +130,31 @@ final class Statistics
         $statement->execute([]);
 
         return (int) $statement->fetchColumn(0);
+    }
+
+    public function getSummarizedAndAveragedStatistics(string $mode): array
+    {
+        $where = '1=1';
+        if ($mode === self::GROUPBY_DATE) {
+            $where = 'DATE(timeOfCapture) < DATE(NOW())';
+        }
+        if ($mode === self::GROUPBY_MONTH) {
+            $where = 'timeOfCapture < LAST_DAY(now() - INTERVAL 1 MONTH)';
+        }
+
+        $query = '
+            SELECT
+                AVG(containersRunningTotal)  AS \'Average Containers running\', 
+                AVG(uniqueClientIps)         AS \'Average unique client IPs\',
+                ' . $mode . '(timeOfCapture) AS timeOfCapture
+            FROM statistics
+            WHERE ' . $where . '
+            GROUP BY ' . $mode . '(timeOfCapture)
+        ';
+
+        $statement = $this->serviceContainer->pdo->prepare($query);
+        $statement->execute([]);
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

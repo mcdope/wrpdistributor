@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace AmiDev\WrpDistributor\Commands\Statistics;
 
 use AmiDev\WrpDistributor\Commands\Command;
+use AmiDev\WrpDistributor\Statistics;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,29 +45,43 @@ final class DashboardUpdate extends Command
     <body>
         <div class="row mb-3 text-center">
             <div class="col-md-8 themed-grid-col">
+                <h3>Containers per host (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                 <div id="containersPerHostContainer" class="chart">
-                    <h3>Containers per host (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                     <canvas id="containersPerHostCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
             <div class="col-md-4 themed-grid-col">
+                <h3>Container usage total (<abbr title="Currently configured maximum container count over all hosts">of %maxContainers%</abbr>)</h3>
                 <div id="containersRemainingContainer" class="chart">
-                    <h3>Container usage total (<abbr title="Currently configured maximum container count over all hosts">of %maxContainers%</abbr>)</h3>
                     <canvas id="containersRemainingCanvas"></canvas>
                 </div>
             </div>
         </div>
         <div class="row mb-3 text-center">
             <div class="col-md-8 themed-grid-col">
+                <h3>Sessions, unique clients &amp; containers total (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                 <div id="sessionTotalsContainer" class="chart">
-                    <h3>Sessions, unique clients &amp; containers total (<abbr title="All times are UTC">now</abbr> -%daysToShow% days)</h3>
                     <canvas id="sessionTotalsCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
             <div class="col-md-4 themed-grid-col">
+                <h3>Currently active sessions</h3>
                 <div id="activeSessionsContainer" class="chart">
-                    <h3>Currently active sessions</h3>
                     <canvas id="activeSessionsCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col-md-6 themed-grid-col">
+                <h3>Sessions, <abbr title="This was introduced after launch, so it isn't available for the first weeks">unique clients</abbr> &amp; containers total by date</h3>
+                <div id="totalsByDateContainer" class="chart">
+                    <canvas id="totalsByDateCanvas" class="canvas-wide"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 themed-grid-col">
+                <h3>Sessions, <abbr title="This was introduced after launch, so it isn't available for the first weeks">unique clients</abbr> &amp; containers total by month</h3>
+                <div id="totalsByMonthContainer" class="chart">
+                    <canvas id="totalsByMonthCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
         </div>
@@ -76,6 +91,8 @@ final class DashboardUpdate extends Command
         const containersRemaining = document.getElementById('containersRemainingCanvas');
         const sessionTotals = document.getElementById('sessionTotalsCanvas');
         const activeSessions = document.getElementById('activeSessionsCanvas');
+        const totalsByDate = document.getElementById('totalsByDateCanvas');
+        const totalsByMonth = document.getElementById('totalsByMonthCanvas');
         
         const containersPerHostLabels = %containersPerHostLabels%;
         const containersPerHostDatasets = %containersPerHostDatasets%;
@@ -86,6 +103,10 @@ final class DashboardUpdate extends Command
         const maxContainers = %maxContainers%;
         const sessionsAlltime = %sessionsAlltime%;
         const containersMaxConcurrent = %containersMaxConcurrent%;
+        const totalsByDateLabels = %totalsByDateLabels%;
+        const totalsByDateDatasets = %totalsByDateDatasets%;
+        const totalsByMonthLabels = %totalsByMonthLabels%;
+        const totalsByMonthDatasets = %totalsByMonthDatasets%;
         
         // slot 1, top left
         const slot1 = new Chart(containersPerHost, {
@@ -215,6 +236,70 @@ final class DashboardUpdate extends Command
             document.querySelector('div#activeSessionsContainer').style.display = 'none'
         }
         
+        // slot 5, left
+        const slot5 = new Chart(totalsByDate, {
+            type: 'line',
+            data: {
+                labels: totalsByDateLabels,
+                datasets: totalsByDateDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 90,
+                            minRotation: 90
+                        }
+                    }
+                }
+            }
+        });
+        slot5.options.plugins.decimation.algorithm = 'min-max';
+        slot5.options.plugins.decimation.enabled = false;
+        slot5.options.plugins.decimation.samples = 500;
+        slot5.update();
+
+        // slot 6, right
+        const slot6 = new Chart(totalsByMonth, {
+            type: 'line',
+            data: {
+                labels: totalsByMonthLabels,
+                datasets: totalsByMonthDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 90,
+                            minRotation: 90
+                        }
+                    }
+                }
+            }
+        });
+        slot6.options.plugins.decimation.algorithm = 'min-max';
+        slot6.options.plugins.decimation.enabled = false;
+        slot6.options.plugins.decimation.samples = 500;
+        slot6.update();
+
         let reloadInterval = null;
         function enableAutoReload() {
             reloadInterval = setInterval(
@@ -334,6 +419,55 @@ TPL;
     }
 
     /**
+     * @return string[]
+     *
+     * @throws \JsonException
+     */
+    private function createGroupedTotalsChart(string $groupByConstValue): array
+    {
+        $labels = $datasets = [];
+        $dataPoints = $this->serviceContainer->statistics->getSummarizedAndAveragedStatistics($groupByConstValue);
+        foreach ($dataPoints as $dataPoint) {
+            if (Statistics::GROUPBY_MONTH === $groupByConstValue) {
+                $labels[] = (\DateTime::createFromFormat(
+                    '!m',
+                    (string) $dataPoint['timeOfCapture'])
+                )->format('F');
+            } else {
+                $labels[] = $dataPoint['timeOfCapture'];
+            }
+
+            foreach ($dataPoint as $valueName => $singleValue) {
+                if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
+                    continue;
+                }
+
+                if (!array_key_exists($valueName, $datasets)) {
+                    $datasets[$valueName] = $this->getLineChartDatasetTemplate();
+                    $datasets[$valueName]['label'] = $valueName;
+                    $datasets[$valueName]['borderColor'] = $this->randomRgbCssColorCode();
+                }
+
+                $datasets[$valueName]['data'][] = $singleValue;
+            }
+        }
+
+        $jsLabels = '[';
+        foreach ($labels as $label) {
+            $jsLabels .= "'" . $label . "',";
+        }
+        $jsLabels = substr($jsLabels, 0, -1) . ']';
+
+        $jsDatasets = '[';
+        foreach ($datasets as $dataset) {
+            $jsDatasets .= json_encode($dataset, JSON_THROW_ON_ERROR) . ',';
+        }
+        $jsDatasets = substr($jsDatasets, 0, -1) . ']';
+
+        return [$jsLabels, $jsDatasets];
+    }
+
+    /**
      * @noinspection PhpUnused
      *
      * @throws InvalidArgumentException
@@ -351,63 +485,74 @@ TPL;
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach ([1, 7, 30] as $daysToShow) {
-            try {
+        try {
+            [
+                $jsContainersPerHostLabels,
+                $jsContainersPerHostDatasets
+            ] = $this->createContainersPerHostChart(1);
+
+            [
+                $jsTotalLabels,
+                $jsTotalDatasets
+            ] = $this->createTotalsChart(1);
+
+            [
+                $jsTotalByDateLabels,
+                $jsTotalByDateDatasets
+            ] = $this->createGroupedTotalsChart(Statistics::GROUPBY_DATE);
+
+            [
+                $jsTotalByMonthLabels,
+                $jsTotalByMonthDatasets
+            ] = $this->createGroupedTotalsChart(Statistics::GROUPBY_MONTH);
+
+            $htmlOutput = str_replace(
+                [
+                    '%containersPerHostLabels%',
+                    '%containersPerHostDatasets%',
+                    '%totalSessions%',
+                    '%totalContainers%',
+                    '%maxContainers%',
+                    '%totalLabels%',
+                    '%totalDatasets%',
+                    '%sessionsAlltime%',
+                    '%containersMaxConcurrent%',
+                    '%daysToShow%',
+                    '%totalsByMonthLabels%',
+                    '%totalsByMonthDatasets%',
+                    '%totalsByDateLabels%',
+                    '%totalsByDateDatasets%',
+                ],
                 [
                     $jsContainersPerHostLabels,
-                    $jsContainersPerHostDatasets
-                ] = $this->createContainersPerHostChart($daysToShow);
-
-                [
+                    $jsContainersPerHostDatasets,
+                    $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0],
+                    $this->serviceContainer->dockerManager->countsPortsUsed(),
+                    $this->serviceContainer->dockerManager->countTotalMaxContainers(),
                     $jsTotalLabels,
-                    $jsTotalDatasets
-                ] = $this->createTotalsChart($daysToShow);
+                    $jsTotalDatasets,
+                    $this->serviceContainer->statistics->getTotalSessionsServed(),
+                    $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
+                    1,
+                    $jsTotalByMonthLabels,
+                    $jsTotalByMonthDatasets,
+                    $jsTotalByDateLabels,
+                    $jsTotalByDateDatasets,
+                ],
+                self::DASHBOARD_TEMPLATE,
+            );
 
-                $htmlOutput = str_replace(
-                    [
-                        '%containersPerHostLabels%',
-                        '%containersPerHostDatasets%',
-                        '%totalSessions%',
-                        '%totalContainers%',
-                        '%maxContainers%',
-                        '%totalLabels%',
-                        '%totalDatasets%',
-                        '%sessionsAlltime%',
-                        '%containersMaxConcurrent%',
-                        '%daysToShow%',
-                    ],
-                    [
-                        $jsContainersPerHostLabels,
-                        $jsContainersPerHostDatasets,
-                        $this->serviceContainer->pdo->query('SELECT COUNT(`id`) FROM `sessions`')->fetch()[0],
-                        $this->serviceContainer->dockerManager->countsPortsUsed(),
-                        $this->serviceContainer->dockerManager->countTotalMaxContainers(),
-                        $jsTotalLabels,
-                        $jsTotalDatasets,
-                        $this->serviceContainer->statistics->getTotalSessionsServed(),
-                        $this->serviceContainer->statistics->getMaxConcurrentContainersServed(),
-                        $daysToShow,
-                    ],
-                    self::DASHBOARD_TEMPLATE,
-                );
+            file_put_contents('dashboard.html', $htmlOutput);
+        } catch (\Throwable $throwable) {
+            $this->serviceContainer->logger->warning(
+                sprintf('Throwable occurred in %s', self::class),
+                [
+                    'message' => $throwable->getMessage(),
+                    'trace' => $throwable->getTrace(),
+                ],
+            );
 
-                $filename = 'dashboard.html';
-                if ($daysToShow !== 1) {
-                    $filename = sprintf('dashboard.%dd.html', $daysToShow);
-                }
-
-                file_put_contents($filename, $htmlOutput);
-            } catch (\Throwable $throwable) {
-                $this->serviceContainer->logger->warning(
-                    sprintf('Throwable occurred in %s', self::class),
-                    [
-                        'message' => $throwable->getMessage(),
-                        'trace' => $throwable->getTrace(),
-                    ],
-                );
-
-                return self::FAILURE;
-            }
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
