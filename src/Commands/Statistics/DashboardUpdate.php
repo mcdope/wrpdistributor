@@ -73,13 +73,13 @@ final class DashboardUpdate extends Command
         </div>
         <div class="row mb-3 text-center">
             <div class="col-md-6 themed-grid-col">
-                <h3>Sessions, <abbr title="This was introduced after launch, so it isn't available for the first weeks">unique clients</abbr> &amp; containers total by date</h3>
+                <h3><abbr title="This was introduced after launch, so it isn't available for the first weeks">Unique clients</abbr> &amp; containers total by day</h3>
                 <div id="totalsByDateContainer" class="chart">
                     <canvas id="totalsByDateCanvas" class="canvas-wide"></canvas>
                 </div>
             </div>
             <div class="col-md-6 themed-grid-col">
-                <h3>Sessions, <abbr title="This was introduced after launch, so it isn't available for the first weeks">unique clients</abbr> &amp; containers total by month</h3>
+                <h3><abbr title="This was introduced after launch, so it isn't available for the first weeks">Unique clients</abbr> &amp; containers total by month</h3>
                 <div id="totalsByMonthContainer" class="chart">
                     <canvas id="totalsByMonthCanvas" class="canvas-wide"></canvas>
                 </div>
