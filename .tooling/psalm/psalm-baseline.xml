@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.8.0@9cf4f60a333f779ad3bc704a555920e81d4fdcda">
+<files psalm-version="5.15.0@5c774aca4746caf3d239d9c8cadb9f882ca29352">
   <file src="index.php">
     <PossiblyUndefinedArrayOffset>
       <code><![CDATA[$_SERVER['HTTP_USER_AGENT']]]></code>
@@ -40,6 +40,27 @@
       <code><![CDATA[$determinedContainerHost['cert']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
+    </PossiblyUndefinedStringArrayOffset>
+  </file>
+  <file src="src/Statistics.php">
+    <ArgumentTypeCoercion>
+      <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
+    </ArgumentTypeCoercion>
+    <LessSpecificReturnStatement>
+      <code>$returnValue</code>
+    </LessSpecificReturnStatement>
+    <MoreSpecificReturnType>
+      <code>array</code>
+    </MoreSpecificReturnType>
+    <PossiblyNullArgument>
+      <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
+    </PossiblyNullArgument>
+    <PossiblyNullArrayOffset>
+      <code>$returnValue</code>
+    </PossiblyNullArrayOffset>
+    <PossiblyUndefinedStringArrayOffset>
+      <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
+      <code><![CDATA[$dataPoint['timeOfCapture']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
 </files>
