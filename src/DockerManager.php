@@ -645,7 +645,7 @@ final class DockerManager
             $this->serviceContainer->logger->debug($callingMethod . '() retry loop', ['iteration' => $try]);
 
             try {
-                if (!$ssh->login($userName, $key->toString('PKCS8'))) {
+                if (!$ssh->login($userName, $key)) {
                     $this->serviceContainer->logger->error($callingMethod . '() login returned false!', $ssh->getErrors());
                     throw new \RuntimeException('Can\'t login to containerHost! Configuration issue?');
                 }

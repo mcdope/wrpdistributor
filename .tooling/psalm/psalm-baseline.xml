@@ -21,6 +21,9 @@
     </PossiblyUndefinedStringArrayOffset>
   </file>
   <file src="src/DockerManager.php">
+    <ImplicitToStringCast>
+      <code>$key</code>
+    </ImplicitToStringCast>
     <PossiblyUndefinedIntArrayOffset>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
