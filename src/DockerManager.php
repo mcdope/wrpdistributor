@@ -103,7 +103,7 @@ final class DockerManager
      * @throws \RuntimeException
      * @throws \Exception
      */
-    public function startContainer(Session $session, bool $useTLS = false): void
+    public function startContainer(Session $session, bool $useTLS = false, ?string $acceptLanguage = null): void
     {
         if (null === $session->id) {
             throw new ContainerStartException('Session not persisted yet!');
@@ -161,6 +161,10 @@ final class DockerManager
             self::DOCKER_IMAGE,
             $authToken,
         );
+
+        if (!empty($acceptLanguage)) {
+            $containerStartCommand .= ' -lang ' . $acceptLanguage;
+        }
 
         $this->serviceContainer->logger->debug(
             'Container start command generated',

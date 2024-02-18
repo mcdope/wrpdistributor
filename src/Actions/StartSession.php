@@ -24,9 +24,10 @@ final readonly class StartSession implements ActionInterface
     {
         parse_str(file_get_contents('php://input'), $input);
         $clientWantsTLS = isset($input['ssl']) && (bool) $input['ssl'];
+        $acceptLanguage = isset($input['acceptLanguage']) ? escapeshellarg($input['acceptLanguage']) : null;
 
         try {
-            $this->serviceContainer->dockerManager->startContainer($session, $clientWantsTLS);
+            $this->serviceContainer->dockerManager->startContainer($session, $clientWantsTLS, $acceptLanguage);
 
             header('Content-Type: text/xml');
             http_response_code(202);
