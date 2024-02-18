@@ -163,7 +163,7 @@ final class DockerManager
         );
 
         if (!empty($acceptLanguage)) {
-            $containerStartCommand .= ' -lang ' . $acceptLanguage;
+            $containerStartCommand .= sprintf(' -lang "%s"', $acceptLanguage);
         }
 
         $this->serviceContainer->logger->debug(
