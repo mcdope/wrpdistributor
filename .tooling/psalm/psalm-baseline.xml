@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.15.0@5c774aca4746caf3d239d9c8cadb9f882ca29352">
+<files psalm-version="5.22.1@e9dad66e11274315dac27e08349c628c7d6a1a43">
   <file src="index.php">
+    <PossiblyNullArgument>
+      <code><![CDATA[$_SERVER['HTTP_USER_AGENT']]]></code>
+      <code><![CDATA[$_SERVER['REMOTE_ADDR']]]></code>
+      <code><![CDATA[$_SERVER['REQUEST_METHOD']]]></code>
+    </PossiblyNullArgument>
+    <PossiblyNullArrayOffset>
+      <code><![CDATA[$actionMap]]></code>
+    </PossiblyNullArrayOffset>
     <PossiblyUndefinedArrayOffset>
       <code><![CDATA[$_SERVER['HTTP_USER_AGENT']]]></code>
       <code><![CDATA[$_SERVER['REMOTE_ADDR']]]></code>
@@ -13,6 +21,11 @@
       <code><![CDATA[$_ENV['SESSION_DATABASE_USER']]]></code>
     </PossiblyUndefinedStringArrayOffset>
   </file>
+  <file src="src/Commands/CleanUnusedContainers.php">
+    <RiskyTruthyFalsyComparison>
+      <code><![CDATA[empty($session->wrpContainerId)]]></code>
+    </RiskyTruthyFalsyComparison>
+  </file>
   <file src="src/Commands/Command.php">
     <PossiblyUndefinedStringArrayOffset>
       <code><![CDATA[$_ENV['SESSION_DATABASE_DSN']]]></code>
@@ -22,7 +35,7 @@
   </file>
   <file src="src/DockerManager.php">
     <ImplicitToStringCast>
-      <code>$key</code>
+      <code><![CDATA[$key]]></code>
     </ImplicitToStringCast>
     <PossiblyUndefinedIntArrayOffset>
       <code><![CDATA[$this->containerHosts[$indexOfFirstUnusedContainerHost]]]></code>
@@ -44,22 +57,28 @@
       <code><![CDATA[$determinedContainerHost['host']]]></code>
       <code><![CDATA[$determinedContainerHost['host']]]></code>
     </PossiblyUndefinedStringArrayOffset>
+    <RiskyTruthyFalsyComparison>
+      <code><![CDATA[!$ssh->exec($containerStartCommand)]]></code>
+      <code><![CDATA[!$ssh->exec($containerStopCommand)]]></code>
+      <code><![CDATA[!$ssh->exec($containerStopCommand)]]></code>
+      <code><![CDATA[empty($acceptLanguage)]]></code>
+    </RiskyTruthyFalsyComparison>
   </file>
   <file src="src/Statistics.php">
     <ArgumentTypeCoercion>
       <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
     </ArgumentTypeCoercion>
     <LessSpecificReturnStatement>
-      <code>$returnValue</code>
+      <code><![CDATA[$returnValue]]></code>
     </LessSpecificReturnStatement>
     <MoreSpecificReturnType>
-      <code>array</code>
+      <code><![CDATA[array]]></code>
     </MoreSpecificReturnType>
     <PossiblyNullArgument>
       <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
     </PossiblyNullArgument>
     <PossiblyNullArrayOffset>
-      <code>$returnValue</code>
+      <code><![CDATA[$returnValue]]></code>
     </PossiblyNullArrayOffset>
     <PossiblyUndefinedStringArrayOffset>
       <code><![CDATA[$dataPoint['containersInUsePerHost']]]></code>
