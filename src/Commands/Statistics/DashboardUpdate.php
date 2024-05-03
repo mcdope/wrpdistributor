@@ -389,7 +389,7 @@ TPL;
         foreach ($dataPoints as $dataPoint) {
             $labels[] = (new \DateTime($dataPoint['timeOfCapture']))->format('H:i');
             foreach ($dataPoint as $valueName => $singleValue) {
-                if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
+                if (is_numeric($valueName) || 'timeOfCapture' === $valueName || 'timeOfCaptureYear' === $valueName || 'timeOfCaptureMonth' === $valueName) {
                     continue;
                 }
 
@@ -432,7 +432,7 @@ TPL;
                 $labels[] = (
                     \DateTime::createFromFormat(
                         '!m',
-                        (string) $dataPoint['timeOfCapture']
+                        (string) $dataPoint['timeOfCaptureMonth']
                     )
                 )->format('F');
             } else {
@@ -440,7 +440,7 @@ TPL;
             }
 
             foreach ($dataPoint as $valueName => $singleValue) {
-                if (is_numeric($valueName) || 'timeOfCapture' === $valueName) {
+                if (is_numeric($valueName) || 'timeOfCapture' === $valueName || 'timeOfCaptureYear' === $valueName || 'timeOfCaptureMonth' === $valueName) {
                     continue;
                 }
 
