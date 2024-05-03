@@ -61,8 +61,20 @@ try {
     exit(1);
 }
 
-$currentClientIp = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim($_SERVER['HTTP_X_FORWARDED_FOR']) : trim($_SERVER['REMOTE_ADDR']);
-$currentClientUserAgent = trim($_SERVER['HTTP_USER_AGENT']);
+$currentClientIp = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim($_SERVER['HTTP_X_FORWARDED_FOR']) : trim((string) $_SERVER['REMOTE_ADDR']);
+$currentClientUserAgent = trim((string) $_SERVER['HTTP_USER_AGENT']);
+if (empty($currentClientUserAgent) || empty($currentClientIp)) {
+    $serviceContainer->logger->warning(
+        'Invalid request, required HTTP stuff is missing!',
+        [
+            'server' => $_SERVER,
+            'request' => $_REQUEST,
+        ],
+    );
+
+    http_response_code(405);
+    exit(1);
+}
 
 // Load session if it exists, else create a new one.
 try {
@@ -80,9 +92,10 @@ $actionMap = [
     'GET' => new DeadOrAlive($serviceContainer),
 ];
 
-if (!array_key_exists($_SERVER['REQUEST_METHOD'], $actionMap)) {
+$requestMethod = $_SERVER['REQUEST_METHOD'];
+if ($requestMethod === null || $requestMethod === '' || !array_key_exists($requestMethod, $actionMap)) {
     $serviceContainer->logger->warning(
-        'Invalid request!',
+        'Invalid request, unsupported method used!',
         [
             'method' => $_SERVER['REQUEST_METHOD'],
             'request' => $_REQUEST,
@@ -94,7 +107,7 @@ if (!array_key_exists($_SERVER['REQUEST_METHOD'], $actionMap)) {
 }
 
 try {
-    $actionMap[$_SERVER['REQUEST_METHOD']]($session);
+    $actionMap[$requestMethod]($session);
 
     exit(0);
 } catch (\LogicException $logicException) {
