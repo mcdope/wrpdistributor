@@ -67,7 +67,7 @@ final class Statistics
 
         $returnValue = [];
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $dataPoint) {
-            $containersPerHost = @unserialize($dataPoint['containersInUsePerHost'], []);
+            $containersPerHost = unserialize($dataPoint['containersInUsePerHost'], ['allowed_classes' => false]);
             if (!is_array($containersPerHost)) {
                 continue;
             }
@@ -134,23 +134,30 @@ final class Statistics
 
     public function getSummarizedAndAveragedStatistics(string $mode): array
     {
-        $where = '1=1';
-        if ($mode === self::GROUPBY_DATE) {
-            $where = 'DATE(timeOfCapture) < DATE(NOW())';
+        if (self::GROUPBY_DATE === $mode) {
+            $query = '
+                SELECT
+                    AVG(containersRunningTotal)  AS \'Average Containers running\', 
+                    AVG(uniqueClientIps)         AS \'Average unique client IPs\',
+                    DATE(timeOfCapture) AS timeOfCapture
+                FROM statistics
+                WHERE DATE(timeOfCapture) < DATE(NOW())
+                GROUP BY DATE(timeOfCapture)
+            ';
         }
-        if ($mode === self::GROUPBY_MONTH) {
-            $where = 'timeOfCapture < LAST_DAY(now() - INTERVAL 1 MONTH)';
+        if (self::GROUPBY_MONTH === $mode) {
+            $query = '
+                SELECT
+                    AVG(containersRunningTotal)  AS \'Average Containers running\', 
+                    AVG(uniqueClientIps)         AS \'Average unique client IPs\',
+                    MONTH(timeOfCapture) AS timeOfCaptureMonth,
+                    YEAR(timeOfCapture) AS timeOfCaptureYear
+                FROM statistics
+                WHERE timeOfCapture < LAST_DAY(now() - INTERVAL 1 MONTH)
+                GROUP BY timeOfCaptureMonth, timeOfCaptureYear
+                ORDER BY timeOfCaptureYear ASC, timeOfCaptureMonth ASC
+            ';
         }
-
-        $query = '
-            SELECT
-                AVG(containersRunningTotal)  AS \'Average Containers running\', 
-                AVG(uniqueClientIps)         AS \'Average unique client IPs\',
-                ' . $mode . '(timeOfCapture) AS timeOfCapture
-            FROM statistics
-            WHERE ' . $where . '
-            GROUP BY ' . $mode . '(timeOfCapture)
-        ';
 
         $statement = $this->serviceContainer->pdo->prepare($query);
         $statement->execute([]);

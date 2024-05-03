@@ -17,7 +17,7 @@ up:
 	@echo ""
 	@echo "${YELLOW}Start all container${NOCOLOR}"
 	@echo ""
-	docker-compose up -d
+	docker compose up -d
 
 	@if [ ! -d vendor ]; then\
 		echo "";\
@@ -30,13 +30,13 @@ stop:
 	@echo ""
 	@echo "${YELLOW}Stop all container${NOCOLOR}"
 	@echo ""
-	docker-compose stop
+	docker compose stop
 
 destroy:
 	@echo ""
 	@echo "${YELLOW}Destroy all container${NOCOLOR}"
 	@echo ""
-	docker-compose down
+	docker compose down
 
 build:
 	@echo ""
@@ -48,57 +48,57 @@ build:
 	@echo ""
 	@echo "${YELLOW}Build all container${NOCOLOR}"
 	@echo ""
-	docker-compose up --build -d
+	docker compose up --build -d
 
 composer:
-	docker-compose exec -T php_$(PROJECT_NAME) composer install
+	docker compose exec -T php_$(PROJECT_NAME) composer install
 
 composer_require:
-	docker-compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
+	docker compose exec php_$(PROJECT_NAME) composer require $(PACKAGE)
 
 psalm:
-	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+	docker compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 create_psalm_baseline:
-	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --set-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+	docker compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --set-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 update_psalm_baseline:
-	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --update-baseline --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
+	docker compose exec -T php_$(PROJECT_NAME) vendor/bin/psalm --update-baseline --use-baseline=/var/www/.tooling/psalm/psalm-baseline.xml
 
 phpcs:
-	docker-compose exec -T php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
+	docker compose exec -T php_$(PROJECT_NAME) vendor/bin/phpcs src/ index.php bin/console
 
 phpcs-fix:
-	docker-compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer --allow-risky=yes --config=php-cs-fixer.dist.php fix src/ tests/ index.php bin/console
+	docker compose exec php_$(PROJECT_NAME) vendor/bin/php-cs-fixer --allow-risky=yes --config=php-cs-fixer.dist.php fix src/ tests/ index.php bin/console
 
 bash_php:
-	docker-compose exec php_$(PROJECT_NAME) bash
+	docker compose exec php_$(PROJECT_NAME) bash
 
 bash_nginx:
-	docker-compose exec nginx_$(PROJECT_NAME) bash
+	docker compose exec nginx_$(PROJECT_NAME) bash
 
 bash_mysql:
-	docker-compose exec mysql_$(PROJECT_NAME) bash
+	docker compose exec mysql_$(PROJECT_NAME) bash
 
 bash_sshd:
-	docker-compose exec sshd_testing_$(PROJECT_NAME) bash
+	docker compose exec sshd_testing_$(PROJECT_NAME) bash
 
 restart: stop up
 
 cleanup_sessions:
-	docker-compose exec php_$(PROJECT_NAME) ./bin/console cleanup:sessions
+	docker compose exec php_$(PROJECT_NAME) ./bin/console cleanup:sessions
 
 statistics_collect:
-	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:collect
+	docker compose exec php_$(PROJECT_NAME) ./bin/console statistics:collect
 
 statistics_dashboard_update:
-	docker-compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
+	docker compose exec php_$(PROJECT_NAME) ./bin/console statistics:dashboard:update
 
 migrate_database:
-	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate --no-interaction -n -v
+	docker compose exec -T php_$(PROJECT_NAME) ./vendor/bin/doctrine-migrations migrations:migrate --no-interaction -n -v
 
 phpunit-to-file:
-	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
+	docker compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
 		--bootstrap vendor/autoload.php \
 		--coverage-html .tooling/phpunit/coverage \
 		--coverage-filter src \
@@ -106,7 +106,7 @@ phpunit-to-file:
 		tests
 
 phpunit:
-	docker-compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
+	docker compose exec -T php_$(PROJECT_NAME) ./vendor/bin/phpunit \
 		--bootstrap vendor/autoload.php \
 		tests
 
