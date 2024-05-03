@@ -67,7 +67,7 @@ final class Statistics
 
         $returnValue = [];
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $dataPoint) {
-            $containersPerHost = @unserialize($dataPoint['containersInUsePerHost'], []);
+            $containersPerHost = unserialize($dataPoint['containersInUsePerHost'], ['allowed_classes' => false]);
             if (!is_array($containersPerHost)) {
                 continue;
             }
@@ -135,21 +135,24 @@ final class Statistics
     public function getSummarizedAndAveragedStatistics(string $mode): array
     {
         $where = '1=1';
-        if ($mode === self::GROUPBY_DATE) {
+        $groupBySecondary = '';
+        if (self::GROUPBY_DATE === $mode) {
             $where = 'DATE(timeOfCapture) < DATE(NOW())';
         }
-        if ($mode === self::GROUPBY_MONTH) {
+        if (self::GROUPBY_MONTH === $mode) {
             $where = 'timeOfCapture < LAST_DAY(now() - INTERVAL 1 MONTH)';
+            $groupBySecondary = ',  YEAR(timeOfCapture)';
         }
 
         $query = '
             SELECT
                 AVG(containersRunningTotal)  AS \'Average Containers running\', 
                 AVG(uniqueClientIps)         AS \'Average unique client IPs\',
-                ' . $mode . '(timeOfCapture) AS timeOfCapture
+                ' . $mode . '(timeOfCapture) AS timeOfCapture,
+                YEAR(timeOfCapture) AS groupByKey
             FROM statistics
             WHERE ' . $where . '
-            GROUP BY ' . $mode . '(timeOfCapture)
+            GROUP BY ' . $mode . '(timeOfCapture)' . $groupBySecondary . '
         ';
 
         $statement = $this->serviceContainer->pdo->prepare($query);
